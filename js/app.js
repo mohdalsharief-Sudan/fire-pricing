@@ -76,10 +76,24 @@ function esc(s) {
 
 function toast(msg) {
   const t = document.getElementById("toast");
+  if (!t) return;
   t.textContent = msg;
   t.classList.add("show");
   setTimeout(() => t.classList.remove("show"), 2600);
 }
+
+/* ربط دفاعي: لا يتعطل البرنامج إذا غاب عنصر من واجهة أقدم */
+function on(id, evt, fn) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener(evt, fn);
+}
+
+window.addEventListener("error", e => {
+  try { toast("خطأ في التشغيل: " + (e.message || "غير معروف")); } catch (x) { /* ignore */ }
+});
+window.addEventListener("unhandledrejection", e => {
+  try { toast("خطأ: " + ((e.reason && e.reason.message) || e.reason || "غير معروف")); } catch (x) { /* ignore */ }
+});
 
 /* ================= الحفظ التلقائي في قاعدة البيانات ================= */
 
@@ -104,7 +118,7 @@ function buildProjectPayload() {
     items: [
       ...state.equipment.map(e => ({
         kind: "equipment", itemId: e.itemId || null, name: e.name, qty: e.qty, unit: "وحدة",
-        supply_cost: num(e.supplyCost), install_cost: num(e.installCost)
+        supply_cost: num(e.supplyCost), install_cost: num(e.installCost), system: e.system || "alarm"
       })),
       ...state.materials.map(m => ({
         kind: "material", name: m.name, qty: m.qty, unit: m.unit, unit_cost: num(m.unitCost)
@@ -276,25 +290,81 @@ function renderServices() {
 
 /* ================= أحداث الجداول (تفويض) ================= */
 
+/* خريطة أسماء الجداول (data-tbl) إلى مفاتيح الحالة الفعلية — إصلاح جذري */
+const STATE_TABLE_KEY = {
+  equipment: "equipment",
+  labor: "labor",
+  material: "materials",
+  service: "services"
+};
+
+function stateKeyFor(tbl) { return STATE_TABLE_KEY[tbl] || tbl; }
+
+/* تحديث جزئي يحافظ على التركيز: لا يعيد بناء الجدول كاملاً عند كل حرف */
+function rowTotalCell(input) {
+  const tr = input.closest("tr");
+  return tr ? tr.querySelector("td.num") : null;
+}
+
+function updateRowTotal(tbl, input) {
+  const id = parseInt(input.dataset.id);
+  const item = state[stateKeyFor(tbl)] && state[stateKeyFor(tbl)].find(x => x.id === id);
+  if (!item) return;
+  let total = 0;
+  if (tbl === "equipment") total = num(item.qty) * (num(item.supplyCost) + num(item.installCost));
+  else if (tbl === "labor") total = num(item.workers) * num(item.days) * num(item.dailyCost);
+  else if (tbl === "material") total = num(item.qty) * num(item.unitCost);
+  else if (tbl === "service") {
+    const c = calcBase();
+    total = item.type === "pct" ? c.baseCost * (num(item.value) / 100) : num(item.value);
+  }
+  const cell = rowTotalCell(input);
+  if (cell) cell.textContent = money(total);
+}
+
+function updateTableTotals(tbl) {
+  const c = calcBase();
+  if (tbl === "equipment") {
+    document.getElementById("eqTotal").textContent =
+      `إجمالي التوريد: ${money(c.eqSupply)} | إجمالي التركيب: ${money(c.eqInstall)} | الإجمالي: ${money(c.eqSupply + c.eqInstall)}`;
+  } else if (tbl === "labor") {
+    document.getElementById("laborTotal").textContent = `إجمالي العمالة: ${money(c.laborCost)}`;
+  } else if (tbl === "material") {
+    document.getElementById("materialTotal").textContent = `إجمالي المواد: ${money(c.materialsCost)}`;
+  } else if (tbl === "service") {
+    document.getElementById("serviceTotal").textContent =
+      `إجمالي الخدمات: ${money(c.servicesAmount)} ${c.servicesPct ? `(منها ${fmt(c.servicesPct)}% كنسبة)` : ""}`;
+  }
+}
+
 document.addEventListener("input", e => {
   const el = e.target;
   if (!el.dataset || !el.dataset.id) return;
   const id = parseInt(el.dataset.id);
   const f = el.dataset.f;
-  if (el.dataset.tbl) {
-    const item = state[el.dataset.tbl].find(x => x.id === id);
+  const tbl = el.dataset.tbl || "equipment";
+  const key = stateKeyFor(tbl);
+  const item = state[key] && state[key].find(x => x.id === id);
+  if (!item) return;
+  item[f] = (f === "name" || f === "unit" || f === "type") ? el.value : num(el.value);
+  updateRowTotal(tbl, el);
+  updateTableTotals(tbl);
+  scheduleAutosave();
+});
+
+/* تغيير نوع الخدمة (select) — حدث change */
+document.addEventListener("change", e => {
+  const el = e.target;
+  if (el && el.dataset && el.dataset.tbl === "service" && el.dataset.f === "type") {
+    const id = parseInt(el.dataset.id);
+    const item = state.services.find(x => x.id === id);
     if (item) {
-      item[f] = (f === "name" || f === "unit" || f === "type") ? el.value : num(el.value);
-      rerenderQuiet(el.dataset.tbl);
-    }
-  } else {
-    const item = state.equipment.find(x => x.id === id);
-    if (item) {
-      item[f] = f === "name" ? el.value : num(el.value);
-      rerenderQuiet("equipment");
+      item.type = el.value;
+      updateRowTotal("service", el);
+      updateTableTotals("service");
+      scheduleAutosave();
     }
   }
-  scheduleAutosave();
 });
 
 function rerenderQuiet(tbl) {
@@ -355,29 +425,30 @@ function addMaterial(name, unit, unitCost, itemId) {
   scheduleAutosave();
 }
 
-document.getElementById("btnAddEquipment").addEventListener("click", () => {
+on("btnAddEquipment", "click", () => {
   addEquipment("", 0, 0, currentFilter === "fighting" ? "fighting" : "alarm");
 });
 
-document.getElementById("btnAddLabor").addEventListener("click", () => {
+on("btnAddLabor", "click", () => {
   state.labor.push({ id: uid(), name: "بند عمالة جديد", workers: 1, days: 1, dailyCost: 0 });
   renderLabor();
   scheduleAutosave();
 });
 
-document.getElementById("btnAddMaterial").addEventListener("click", () => {
+on("btnAddMaterial", "click", () => {
   addMaterial("", "م", 0);
 });
 
-document.getElementById("btnAddService").addEventListener("click", () => {
+on("btnAddService", "click", () => {
   state.services.push({ id: uid(), name: "خدمة جديدة", value: 0, type: "amount" });
   renderServices();
   scheduleAutosave();
+  toast("أدخل المبلغ مباشرة. ملاحظة: الخدمة بنوع نسبة تحتاج بنود أجهزة/مواد أولاً لتُحسب");
 });
 
 /* ================= تقدير الكابلات ================= */
 
-document.getElementById("btnEstimateCables").addEventListener("click", () => {
+on("btnEstimateCables", "click", () => {
   const alarmDevices = state.equipment
     .filter(e => (e.system || "alarm") === "alarm")
     .reduce((s, e) => s + num(e.qty), 0);
@@ -401,7 +472,12 @@ document.getElementById("btnEstimateCables").addEventListener("click", () => {
 /* ================= مكتبة الأجهزة (من قاعدة البيانات) ================= */
 
 const libModal = document.getElementById("libraryModal");
-let libSystem = "alarm";
+let libSystem = "all";
+
+const SYSTEM_BADGES = {
+  alarm: '<span class="sys-badge sys-alarm">إنذار</span>',
+  fighting: '<span class="sys-badge sys-fighting">إطفاء</span>'
+};
 
 async function renderLibrary() {
   const list = document.getElementById("libList");
@@ -428,9 +504,10 @@ async function renderLibrary() {
         const div = document.createElement("div");
         div.className = "lib-item";
         const priceText = it.supply_cost > 0 ? money(it.supply_cost) : "سعر حسب العرض";
+        const badge = SYSTEM_BADGES[it.category_system] || "";
         div.innerHTML = `
           <div>
-            <div class="lib-name">${esc(it.name)} <span class="lib-code">${esc(it.code)}</span></div>
+            <div class="lib-name">${badge}${esc(it.name)} <span class="lib-code">${esc(it.code)}</span></div>
             <div class="lib-meta">تركيب مرجعي: ${it.install_cost > 0 ? money(it.install_cost) : "—"} لكل وحدة</div>
           </div>
           <div class="lib-price">${priceText}</div>`;
@@ -448,23 +525,31 @@ async function renderLibrary() {
   }
 }
 
-document.getElementById("btnAddFromLibrary").addEventListener("click", () => {
+on("btnAddFromLibrary", "click", () => {
   libModal.classList.add("show");
   renderLibrary();
 });
-document.getElementById("libraryClose").addEventListener("click", () => libModal.classList.remove("show"));
+on("libraryClose", "click", () => libModal.classList.remove("show"));
 libModal.addEventListener("click", e => { if (e.target === libModal) libModal.classList.remove("show"); });
-document.getElementById("libCategory").addEventListener("change", e => {
+on("libCategory", "change", e => {
   libSystem = e.target.value;
   document.getElementById("libSearch").value = "";
   renderLibrary();
 });
-document.getElementById("libSearch").addEventListener("input", renderLibrary);
+on("libSearch", "input", renderLibrary);
 
 /* ================= مكتبة المواد ================= */
 
 const matLibModal = document.getElementById("materialsLibModal");
 let matLibCat = "all";
+
+function fillMatLibCategories() {
+  const sel = document.getElementById("matLibCategory");
+  const prev = sel.value;
+  const cats = CATEGORIES.filter(c => c.kind === "material");
+  sel.innerHTML = `<option value="all">كل الفئات</option>` +
+    cats.map(c => `<option value="${c.id}" ${String(c.id) === prev ? "selected" : ""}>${esc(c.name)}</option>`).join("");
+}
 
 async function renderMaterialsLibrary() {
   const list = document.getElementById("matLibList");
@@ -509,14 +594,15 @@ async function renderMaterialsLibrary() {
   }
 }
 
-document.getElementById("btnAddMaterialFromLibrary").addEventListener("click", () => {
+on("btnAddMaterialFromLibrary", "click", () => {
+  fillMatLibCategories();
   matLibModal.classList.add("show");
   renderMaterialsLibrary();
 });
-document.getElementById("materialsLibClose").addEventListener("click", () => matLibModal.classList.remove("show"));
+on("materialsLibClose", "click", () => matLibModal.classList.remove("show"));
 matLibModal.addEventListener("click", e => { if (e.target === matLibModal) matLibModal.classList.remove("show"); });
-document.getElementById("matLibSearch").addEventListener("input", renderMaterialsLibrary);
-document.getElementById("matLibCategory").addEventListener("change", e => {
+on("matLibSearch", "input", renderMaterialsLibrary);
+on("matLibCategory", "change", e => {
   matLibCat = e.target.value;
   renderMaterialsLibrary();
 });
@@ -559,17 +645,45 @@ function bindProjectInputs() {
       scheduleAutosave();
     });
   });
-  document.getElementById("projectCurrency").addEventListener("change", e => {
+  on("projectCurrency", "change", e => {
     state.project.currency = e.target.value;
     updateCurrencyBadge();
     renderAll();
     scheduleAutosave();
   });
-  document.getElementById("projectClientSelect").addEventListener("change", e => {
+  on("projectClientSelect", "change", e => {
     meta.clientId = e.target.value ? parseInt(e.target.value) : null;
+    // انسخ اسم العميل المختار إلى حقل الاسم اليدوي للعرض
+    const c = CLIENTS.find(x => x.id === meta.clientId);
+    if (c) {
+      state.project.client = c.name;
+      document.getElementById("projectClient").value = c.name;
+    }
     scheduleAutosave();
   });
-  document.getElementById("projectStatus").addEventListener("change", e => {
+
+  /* كتابة اسم العميل يدوياً: ربط تلقائي بسجل العملاء عند مغادرة الحقل */
+  on("projectClient", "blur", () => {
+    const name = state.project.client.trim();
+    if (!name) return;
+    const existing = CLIENTS.find(c => c.name.trim().toLowerCase() === name.toLowerCase());
+    if (existing) {
+      if (meta.clientId !== existing.id) {
+        meta.clientId = existing.id;
+        fillClientSelect();
+        toast(`تم الربط بالعميل الموجود: ${existing.name}`);
+      }
+    } else {
+      API.clientsSave({ name, city: state.project.location || "" }).then(c => {
+        CLIENTS.push(c);
+        meta.clientId = c.id;
+        fillClientSelect();
+        toast(`تمت إضافة العميل "${name}" إلى سجل العملاء تلقائياً`);
+        scheduleAutosave();
+      }).catch(() => { /* تجاهل */ });
+    }
+  });
+  on("projectStatus", "change", e => {
     meta.status = e.target.value;
     scheduleAutosave();
   });
@@ -608,48 +722,76 @@ function renderMarginAdvice() {
 
 /* ================= عرض السعر ================= */
 
-function buildQuote() {
+function buildQuote(mode) {
+  mode = mode || "client";
   const c = calcFull();
   const p = state.project;
   const cur = CALC.CURRENCIES[p.currency].sym;
   const client = CLIENTS.find(x => x.id === meta.clientId);
 
-  const eqRows = state.equipment.map((e, i) => `
+  /* عامل سعر البيع: يوزع (السعر بعد الخصم) على كل البنود بنسبة واحدة */
+  const factor = c.baseCost > 0 ? c.afterDiscount / c.baseCost : 1;
+  const sale = (cost) => Math.round(cost * factor * 100) / 100;
+  const isClient = mode === "client";
+
+  /* عمود السعر يختلف حسب الوضع */
+  const eqPriceLabel = isClient ? "سعر البيع/وحدة" : "توريد/وحدة";
+  const matPriceLabel = isClient ? "سعر البيع/وحدة" : "تكلفة الوحدة";
+  const labPriceLabel = isClient ? "السعر اليومي" : "التكلفة اليومية";
+  const svcPriceLabel = isClient ? "القيمة" : "القيمة";
+
+  const eqRows = state.equipment.map((e, i) => {
+    const unit = isClient ? sale(num(e.supplyCost) + num(e.installCost)) : num(e.supplyCost);
+    const total = isClient ? sale((num(e.supplyCost) + num(e.installCost)) * num(e.qty)) : num(e.qty) * (num(e.supplyCost) + num(e.installCost));
+    return `
     <tr>
       <td>${i + 1}</td>
       <td>${esc(e.name)}</td>
       <td>${fmt(e.qty)}</td>
-      <td>${e.supplyCost ? fmt(e.supplyCost) : "—"}</td>
-      <td>${e.installCost ? fmt(e.installCost) : "—"}</td>
-      <td>${fmt(e.qty * (num(e.supplyCost) + num(e.installCost)))}</td>
-    </tr>`).join("");
+      <td>${isClient ? fmt(unit) : (e.supplyCost ? fmt(e.supplyCost) : "—")}</td>
+      <td>${isClient ? "شامل" : (e.installCost ? fmt(e.installCost) : "—")}</td>
+      <td>${fmt(total)}</td>
+    </tr>`;
+  }).join("");
 
-  const materialRows = state.materials.map((m, i) => `
+  const materialRows = state.materials.map((m, i) => {
+    const unit = isClient ? sale(num(m.unitCost)) : num(m.unitCost);
+    const total = isClient ? sale(num(m.qty) * num(m.unitCost)) : num(m.qty) * num(m.unitCost);
+    return `
     <tr>
       <td>${i + 1}</td>
       <td>${esc(m.name)}</td>
       <td>${fmt(m.qty)} ${esc(m.unit)}</td>
-      <td>${fmt(m.unitCost)}</td>
-      <td>${fmt(m.qty * num(m.unitCost))}</td>
-    </tr>`).join("");
+      <td>${fmt(unit)}</td>
+      <td>${fmt(total)}</td>
+    </tr>`;
+  }).join("");
 
-  const laborRows = state.labor.map((l, i) => `
+  const laborRows = state.labor.map((l, i) => {
+    const unit = isClient ? sale(num(l.dailyCost)) : num(l.dailyCost);
+    const total = isClient ? sale(num(l.workers) * num(l.days) * num(l.dailyCost)) : num(l.workers) * num(l.days) * num(l.dailyCost);
+    return `
     <tr>
       <td>${i + 1}</td>
       <td>${esc(l.name)}</td>
       <td>${l.workers} × ${l.days} يوم</td>
-      <td>${fmt(l.dailyCost)}</td>
-      <td>${fmt(l.workers * l.days * l.dailyCost)}</td>
-    </tr>`).join("");
+      <td>${fmt(unit)}</td>
+      <td>${fmt(total)}</td>
+    </tr>`;
+  }).join("");
 
-  const serviceRows = state.services.map((s, i) => `
+  const serviceRows = state.services.map((s, i) => {
+    const amount = s.type === "pct" ? c.baseCost * (num(s.value) / 100) : num(s.value);
+    const shown = isClient ? sale(amount) : amount;
+    return `
     <tr>
       <td>${i + 1}</td>
       <td>${esc(s.name)}</td>
       <td>${s.type === "pct" ? fmt(s.value) + "%" : fmt(s.value)}</td>
-      <td>${s.type === "pct" ? "نسبة من التكلفة" : "مبلغ ثابت"}</td>
-      <td>${fmt(s.type === "pct" ? c.baseCost * (num(s.value) / 100) : num(s.value))}</td>
-    </tr>`).join("");
+      <td>${s.type === "pct" ? "نسبة" : "مبلغ"}</td>
+      <td>${fmt(shown)}</td>
+    </tr>`;
+  }).join("");
 
   const empty = `<tr><td colspan="5" style="color:#888;text-align:center">— لا توجد بنود —</td></tr>`;
 
@@ -667,58 +809,24 @@ function buildQuote() {
   const termsText = (COMPANY.terms || "").replace("%DAYS%", fmt(p.validity)).split("\n").filter(Boolean)
     .map(t => `<div>${esc(t)}</div>`).join("");
 
-  return `
-  <div class="quote-doc" id="quoteDoc">
-    <div class="q-head">
-      <div>
-        <h2>عرض سعر - أنظمة الحماية من الحرائق</h2>
-        <div class="q-meta">
-          <div><strong>رقم العرض:</strong> ${esc(meta.quoteNo) || "—"} <span style="margin:0 14px"></span><strong>الحالة:</strong> ${STATUS_LABELS[meta.status] || meta.status}</div>
-          <div><strong>المشروع:</strong> ${esc(p.name) || "—"}</div>
-          <div><strong>العميل:</strong> ${client ? esc(client.name) + (client.cr_number ? " — س.ت: " + esc(client.cr_number) : "") : esc(p.client) || "—"} <span style="margin:0 14px"></span><strong>الموقع:</strong> ${esc(p.location) || "—"}</div>
-          <div><strong>التاريخ:</strong> ${p.date ? new Date(p.date).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "—"} <span style="margin:0 14px"></span><strong>صلاحية العرض:</strong> ${fmt(p.validity)} يوم (حتى ${validityStr})</div>
-        </div>
-      </div>
-      <div style="text-align:center;font-size:13px;color:#555">
-        ${companyBlock}
-        <div><strong>${esc(COMPANY.name)}</strong></div>
-        ${COMPANY.slogan ? `<div style="font-size:11px;color:#777">${esc(COMPANY.slogan)}</div>` : ""}
-        ${companyContact ? `<div style="font-size:11px;color:#777;margin-top:4px">${companyContact}</div>` : ""}
-      </div>
-    </div>
-
-    <h3 style="color:#0f766e;font-size:14px;margin-top:14px">1) الأجهزة والمعدات الموردة</h3>
-    <table>
-      <thead><tr><th>م</th><th>البند</th><th>الكمية</th><th>توريد/وحدة</th><th>تركيب/وحدة</th><th>الإجمالي</th></tr></thead>
-      <tbody>${eqRows || empty}</tbody>
-      <tr><td colspan="5" style="text-align:left"><strong>إجمالي الأجهزة (توريد + تركيب)</strong></td><td><strong>${fmt(c.eqSupply + c.eqInstall)}</strong></td></tr>
-    </table>
-
-    ${materialRows ? `
-    <h3 style="color:#0f766e;font-size:14px;margin-top:14px">2) المواد والمستهلكات</h3>
-    <table>
-      <thead><tr><th>م</th><th>المادة</th><th>الكمية</th><th>تكلفة الوحدة</th><th>الإجمالي</th></tr></thead>
-      <tbody>${materialRows}</tbody>
-      <tr><td colspan="4" style="text-align:left"><strong>إجمالي المواد</strong></td><td><strong>${fmt(c.materialsCost)}</strong></td></tr>
-    </table>` : ""}
-
-    ${laborRows ? `
-    <h3 style="color:#0f766e;font-size:14px;margin-top:14px">3) تكاليف العمالة</h3>
-    <table>
-      <thead><tr><th>م</th><th>البند</th><th>عدد × أيام</th><th>التكلفة اليومية</th><th>الإجمالي</th></tr></thead>
-      <tbody>${laborRows}</tbody>
-      <tr><td colspan="4" style="text-align:left"><strong>إجمالي العمالة</strong></td><td><strong>${fmt(c.laborCost)}</strong></td></tr>
-    </table>` : ""}
-
-    ${serviceRows ? `
-    <h3 style="color:#0f766e;font-size:14px;margin-top:14px">4) الخدمات الهندسية والتشغيلية</h3>
-    <table>
-      <thead><tr><th>م</th><th>الخدمة</th><th>القيمة</th><th>النوع</th><th>الإجمالي</th></tr></thead>
-      <tbody>${serviceRows}</tbody>
-      <tr><td colspan="4" style="text-align:left"><strong>إجمالي الخدمات</strong></td><td><strong>${fmt(c.servicesAmount)}</strong></td></tr>
-    </table>` : ""}
-
-    <h3 style="color:#0f766e;font-size:14px;margin-top:14px">5) ملخص التكاليف والأسعار</h3>
+  /* ====== ملخص الأسعار ====== */
+  let summary = "";
+  if (isClient) {
+    summary = `
+    <h3 style="color:#0f766e;font-size:14px;margin-top:14px">5) ملخص الأسعار</h3>
+    <div class="q-sum">
+      <div>الأجهزة والمعدات: <strong>${fmt(sale(c.eqSupply + c.eqInstall))} ${cur}</strong></div>
+      ${state.materials.length ? `<div>المواد والمستهلكات: <strong>${fmt(sale(c.materialsCost))} ${cur}</strong></div>` : ""}
+      ${state.labor.length ? `<div>تكاليف العمالة: <strong>${fmt(sale(c.laborCost))} ${cur}</strong></div>` : ""}
+      ${state.services.length ? `<div>الخدمات الهندسية والتشغيلية: <strong>${fmt(sale(c.servicesAmount))} ${cur}</strong></div>` : ""}
+      ${state.margins.discountPct > 0 ? `<div>الخصم التجاري (${fmt(state.margins.discountPct)}%): -${fmt(c.discount)} ${cur}</div>` : ""}
+      <div>الإجمالي قبل الضريبة: <strong>${fmt(c.afterDiscount)} ${cur}</strong></div>
+      ${num(p.vat) > 0 ? `<div>ضريبة القيمة المضافة (${fmt(p.vat)}%): ${fmt(c.vat)} ${cur}</div>` : ""}
+      <div class="grand">الإجمالي النهائي: ${fmt(c.grandTotal)} ${cur}</div>
+    </div>`;
+  } else {
+    summary = `
+    <h3 style="color:#0f766e;font-size:14px;margin-top:14px">5) ملخص التكاليف والأسعار (داخلي)</h3>
     <div class="q-sum">
       <div>التكلفة الأساسية للمشروع: <strong>${fmt(c.baseCost)} ${cur}</strong></div>
       <div>النفقات العامة (${fmt(state.margins.overheadPct)}%): ${fmt(c.overhead)} ${cur}</div>
@@ -729,17 +837,99 @@ function buildQuote() {
       <div>السعر بعد الخصم: ${fmt(c.afterDiscount)} ${cur}</div>` : ""}
       ${num(p.vat) > 0 ? `<div>ضريبة القيمة المضافة (${fmt(p.vat)}%): ${fmt(c.vat)} ${cur}</div>` : ""}
       <div class="grand">الإجمالي النهائي: ${fmt(c.grandTotal)} ${cur}</div>
+    </div>`;
+  }
+
+  /* ====== العناوين حسب الوضع ====== */
+  const eqTitle = isClient ? "1) الأجهزة والمعدات الموردة" : "1) الأجهزة والمعدات (تكلفة)";
+  const matTitle = isClient ? "2) المواد والمستهلكات" : "2) المواد والمستهلكات (تكلفة)";
+  const labTitle = isClient ? "3) تكاليف العمالة" : "3) تكاليف العمالة (تكلفة)";
+  const svcTitle = isClient ? "4) الخدمات الهندسية" : "4) الخدمات الهندسية (تكلفة)";
+
+  return `
+  <div class="quote-doc" id="quoteDoc">
+    ${isClient ? "" : `<div class="internal-warning">⚠️ تقرير داخلي — يحتوي التكاليف والهوامش والأرباح — لا يُرسل للعميل</div>`}
+    <div class="q-head">
+      <div>
+        <h2>عرض سعر - أنظمة الحماية من الحرائق</h2>
+        <div class="q-meta">
+          <div><strong>رقم العرض:</strong> ${esc(meta.quoteNo) || "—"} <span style="margin:0 14px"></span><strong>التاريخ:</strong> ${p.date ? new Date(p.date).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) : "—"}</div>
+          <div><strong>المشروع:</strong> ${esc(p.name) || "—"}</div>
+          <div><strong>العميل:</strong> ${client ? esc(client.name) + (client.cr_number ? " — س.ت: " + esc(client.cr_number) : "") : esc(p.client) || "—"} <span style="margin:0 14px"></span><strong>الموقع:</strong> ${esc(p.location) || "—"}</div>
+          <div><strong>صلاحية العرض:</strong> ${fmt(p.validity)} يوم (حتى ${validityStr})</div>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:13px;color:#555">
+        ${companyBlock}
+        <div><strong>${esc(COMPANY.name)}</strong></div>
+        ${COMPANY.slogan ? `<div style="font-size:11px;color:#777">${esc(COMPANY.slogan)}</div>` : ""}
+        ${companyContact ? `<div style="font-size:11px;color:#777;margin-top:4px">${companyContact}</div>` : ""}
+      </div>
     </div>
+
+    <h3 style="color:#0f766e;font-size:14px;margin-top:14px">${eqTitle}</h3>
+    <table>
+      <thead><tr><th>م</th><th>البند</th><th>الكمية</th><th>${eqPriceLabel}</th><th>${isClient ? "تركيب" : "تركيب/وحدة"}</th><th>الإجمالي</th></tr></thead>
+      <tbody>${eqRows || empty}</tbody>
+      <tr><td colspan="5" style="text-align:left"><strong>إجمالي الأجهزة</strong></td><td><strong>${fmt(isClient ? sale(c.eqSupply + c.eqInstall) : c.eqSupply + c.eqInstall)}</strong></td></tr>
+    </table>
+
+    ${materialRows ? `
+    <h3 style="color:#0f766e;font-size:14px;margin-top:14px">${matTitle}</h3>
+    <table>
+      <thead><tr><th>م</th><th>المادة</th><th>الكمية</th><th>${matPriceLabel}</th><th>الإجمالي</th></tr></thead>
+      <tbody>${materialRows}</tbody>
+      <tr><td colspan="4" style="text-align:left"><strong>إجمالي المواد</strong></td><td><strong>${fmt(isClient ? sale(c.materialsCost) : c.materialsCost)}</strong></td></tr>
+    </table>` : ""}
+
+    ${laborRows ? `
+    <h3 style="color:#0f766e;font-size:14px;margin-top:14px">${labTitle}</h3>
+    <table>
+      <thead><tr><th>م</th><th>البند</th><th>عدد × أيام</th><th>${labPriceLabel}</th><th>الإجمالي</th></tr></thead>
+      <tbody>${laborRows}</tbody>
+      <tr><td colspan="4" style="text-align:left"><strong>إجمالي العمالة</strong></td><td><strong>${fmt(isClient ? sale(c.laborCost) : c.laborCost)}</strong></td></tr>
+    </table>` : ""}
+
+    ${serviceRows ? `
+    <h3 style="color:#0f766e;font-size:14px;margin-top:14px">${svcTitle}</h3>
+    <table>
+      <thead><tr><th>م</th><th>الخدمة</th><th>القيمة</th><th>النوع</th><th>${svcPriceLabel}</th></tr></thead>
+      <tbody>${serviceRows}</tbody>
+      <tr><td colspan="4" style="text-align:left"><strong>إجمالي الخدمات</strong></td><td><strong>${fmt(isClient ? sale(c.servicesAmount) : c.servicesAmount)}</strong></td></tr>
+    </table>` : ""}
+
+    ${summary}
 
     ${p.notes ? `<div class="q-footer"><strong>ملاحظات وشروط:</strong><br>${esc(p.notes)}</div>` : ""}
     ${termsText ? `<div class="q-footer"><strong>شروط عامة:</strong>${termsText}</div>` : ""}
+    ${isClient ? `<div class="q-footer" style="text-align:center;font-size:11px;color:#999;margin-top:8px">تم إنشاء هذا العرض بواسطة ${esc(COMPANY.name)}</div>` : ""}
   </div>`;
 }
 
+let quoteMode = "client";
+
+function setQuoteMode(mode) {
+  quoteMode = mode;
+  renderQuote();
+}
+
 function renderQuote() {
-  document.getElementById("quotePreview").innerHTML = buildQuote();
+  document.getElementById("quotePreview").innerHTML = buildQuote(quoteMode);
+  const hint = document.getElementById("quoteModeHint");
+  if (quoteMode === "client") {
+    hint.textContent = "وضع عرض العميل: أسعار البيع فقط دون التكاليف والهوامش — هذا ما يُطبع ويُرسل للعميل.";
+  } else {
+    hint.textContent = "التقرير الداخلي: التكاليف والهوامش والأرباح — لا يُرسل للعميل.";
+  }
+  document.getElementById("btnQuoteClient").classList.toggle("btn-primary", quoteMode === "client");
+  document.getElementById("btnQuoteClient").classList.toggle("btn-secondary", quoteMode !== "client");
+  document.getElementById("btnQuoteInternal").classList.toggle("btn-primary", quoteMode === "internal");
+  document.getElementById("btnQuoteInternal").classList.toggle("btn-secondary", quoteMode !== "internal");
   renderAnalysis();
 }
+
+on("btnQuoteClient", "click", () => setQuoteMode("client"));
+on("btnQuoteInternal", "click", () => setQuoteMode("internal"));
 
 /* ================= التحليل الذكي ================= */
 
@@ -841,10 +1031,19 @@ async function renderProjectsModal() {
 
 async function openProject(id) {
   try {
+    if (!id) { alert("معرّف المشروع غير صالح"); return; }
     const p = await API.projectsGet(id);
-    if (!p) { toast("المشروع غير موجود"); return; }
+    if (!p) { alert("المشروع غير موجود أو محذوف"); return; }
+
+    /* تشخيص: مشروع فارغ (ربما حُفظ من نسخة قديمة معطوبة) */
+    const totalItems = (p.items || []).length;
+    const hasName = (p.name || "").trim() !== "";
+    if (!totalItems && !hasName) {
+      if (!confirm("هذا المشروع محفوظ بدون بيانات (اسم أو بنود).\n\nقد يكون حُفظ في نسخة قديمة لا تحفظ البيانات بشكل صحيح.\n\nهل تريد فتحه كما هو؟ (ينصح بالبحث عن قاعدة قديمة أو ملف احتياطي عبر أزرار الاسترداد)")) return;
+    }
+    const linkedClient = p.client || CLIENTS.find(x => x.id === p.client_id) || null;
     state.project = {
-      name: p.name || "", client: "", location: p.location || "", date: p.date || today(),
+      name: p.name || "", client: linkedClient ? linkedClient.name : "", location: p.location || "", date: p.date || today(),
       currency: p.currency || "SAR", vat: num(p.vat) || 15, validity: num(p.validity) || 30,
       area: p.area || "", floors: p.floors || "", notes: p.notes || ""
     };
@@ -852,7 +1051,7 @@ async function openProject(id) {
     meta = { id: p.id, quoteNo: p.quote_no || "", status: p.status || "draft", clientId: p.client_id || null };
     state.equipment = (p.items || []).filter(i => i.kind === "equipment").map(i => ({
       id: uid(), name: i.name, qty: i.qty, supplyCost: i.supply_cost, installCost: i.install_cost,
-      system: "alarm", itemId: i.item_id
+      system: i.system || "alarm", itemId: i.item_id
     }));
     state.materials = (p.items || []).filter(i => i.kind === "material").map(i => ({
       id: uid(), name: i.name, qty: i.qty, unit: i.unit, unitCost: i.unit_cost, itemId: i.item_id
@@ -865,6 +1064,7 @@ async function openProject(id) {
     }));
     document.getElementById("projectsModal").classList.remove("show");
     fillClientSelect();
+    quoteMode = "client";   /* دائماً نبدأ بعرض العميل عند فتح مشروع */
     renderAll();
     setTab("project");
     toast(`تم فتح المشروع ${meta.quoteNo}`);
@@ -873,31 +1073,38 @@ async function openProject(id) {
   }
 }
 
-document.getElementById("btnSaveProject").addEventListener("click", () => doSave(true));
+on("btnSaveProject", "click", () => doSave(true));
 
-document.getElementById("btnLoadProject").addEventListener("click", () => {
+on("btnLoadProject", "click", () => {
   document.getElementById("projectsModal").classList.add("show");
   renderProjectsModal();
 });
-document.getElementById("projectsClose").addEventListener("click", () => document.getElementById("projectsModal").classList.remove("show"));
-document.getElementById("projectsModal").addEventListener("click", e => {
+on("projectsClose", "click", () => document.getElementById("projectsModal").classList.remove("show"));
+on("projectsModal", "click", e => {
   if (e.target.id === "projectsModal") e.target.classList.remove("show");
 });
-document.getElementById("projectsSearch").addEventListener("input", renderProjectsModal);
+on("projectsSearch", "input", renderProjectsModal);
 
-document.getElementById("btnImportLegacy").addEventListener("click", async () => {
+on("btnImportLegacy", "click", async () => {
   const legacy = [];
   try {
     Object.keys(localStorage).forEach(k => {
-      if (k.startsWith("firepricing_projects_v1")) {
-        try { legacy.push(JSON.parse(localStorage.getItem(k))); } catch (e) { /* ignore */ }
+      if (k.startsWith("firepricing_projects_v1") || k.startsWith("fp_projects_v2")) {
+        const raw = localStorage.getItem(k);
+        if (k.startsWith("fp_projects_v2")) {
+          try {
+            const arr = JSON.parse(raw);
+            if (Array.isArray(arr)) legacy.push(...arr);
+          } catch (e) { /* ignore */ }
+        } else {
+          try { legacy.push(JSON.parse(raw)); } catch (e) { /* ignore */ }
+        }
       }
     });
   } catch (e) { /* ignore */ }
   if (!legacy.length) { toast("لا توجد مشاريع قديمة للاستيراد"); return; }
   try {
     const n = await API.projectsImportLegacy(legacy);
-    try { legacy.forEach((_, i) => localStorage.removeItem(Object.keys(localStorage).find(k => k.startsWith("firepricing_projects_v1")))); } catch (e) { /* ignore */ }
     toast(`تم استيراد ${n} مشروع من النسخة السابقة`);
     renderProjectsModal();
   } catch (e) {
@@ -905,7 +1112,64 @@ document.getElementById("btnImportLegacy").addEventListener("click", async () =>
   }
 });
 
-document.getElementById("btnNewProject").addEventListener("click", () => {
+/* ===== استرداد البيانات: قواعد قديمة / ملف احتياطي / مجلد البيانات ===== */
+
+on("btnOpenDataFolder", "click", async () => {
+  try {
+    const res = await API.openDataFolder();
+    if (res && res.current) toast("مجلد بيانات التطبيق: " + res.current);
+  } catch (e) { toast("تعذر فتح المجلد: " + e.message); }
+});
+
+on("btnScanLegacy", "click", async () => {
+  const box = document.getElementById("legacyScanResult");
+  if (!box) return;
+  box.innerHTML = `<p class="hint">جارٍ البحث...</p>`;
+  try {
+    const res = await API.scanLegacy();
+    if (!res || !res.found || !res.found.length) {
+      box.innerHTML = `<p class="hint">لم يُعثر على قواعد بيانات قديمة. مسار القاعدة الحالية: ${esc((res && res.current) || "")}</p>`;
+      return;
+    }
+    box.innerHTML = "";
+    res.found.forEach(f => {
+      const div = document.createElement("div");
+      div.className = "proj-item";
+      div.innerHTML = `
+        <div>
+          <div class="proj-name">${f.isCurrent ? "القاعدة الحالية" : "قاعدة قديمة: " + esc(f.name)}</div>
+          <div class="proj-meta">${esc(f.path)}</div>
+        </div>
+        ${f.isCurrent ? "" : `<button class="btn btn-primary btn-sm" data-importdb="${esc(f.path)}">استيراد المشاريع</button>`}`;
+      const btn = div.querySelector("[data-importdb]");
+      if (btn) btn.addEventListener("click", async () => {
+        if (!confirm("سيتم استيراد مشاريع وعملاء هذه القاعدة القديمة إلى قاعدة البيانات الحالية. متابعة؟")) return;
+        const r = await API.importFromPath({ path: btn.dataset.importdb });
+        if (r && r.error) { toast("فشل الاستيراد: " + r.error); return; }
+        toast(`تم الاستيراد: ${r.projects} مشروع و ${r.clients} عميل`);
+        renderProjectsModal();
+      });
+      box.appendChild(div);
+    });
+  } catch (e) {
+    box.innerHTML = `<p class="hint">تعذر البحث: ${esc(e.message)}</p>`;
+  }
+});
+
+on("btnImportJson", "click", async () => {
+  try {
+    const res = await API.importJsonFile();
+    if (!res || res.canceled) return;
+    const r = res.result || {};
+    if (r.error) { toast("فشل الاستيراد: " + r.error); return; }
+    toast(`تم الاستيراد: ${r.projects} مشروع و ${r.clients} عميل`);
+    renderProjectsModal();
+  } catch (e) {
+    toast("فشل الاستيراد: " + e.message);
+  }
+});
+
+on("btnNewProject", "click", () => {
   if (state.equipment.length || state.labor.length || state.materials.length || state.services.length || state.project.name.trim()) {
     if (!confirm("سيتم تفريغ بيانات المشروع الحالي. هل تريد المتابعة؟")) return;
   }
@@ -915,6 +1179,7 @@ document.getElementById("btnNewProject").addEventListener("click", () => {
     margins: { overheadPct: 8, contingencyPct: 5, profitPct: 15, discountPct: 0 }
   };
   meta = { id: null, quoteNo: "", status: "draft", clientId: null };
+  quoteMode = "client";
   renderAll();
   setTab("project");
   toast("تم إنشاء مشروع جديد");
@@ -922,7 +1187,7 @@ document.getElementById("btnNewProject").addEventListener("click", () => {
 
 /* ================= النسخ الاحتياطي ================= */
 
-document.getElementById("btnBackup").addEventListener("click", async () => {
+on("btnBackup", "click", async () => {
   try {
     const res = await API.exportBackup();
     if (res && !res.canceled) toast("تم تصدير النسخة الاحتياطية");
@@ -933,9 +1198,20 @@ document.getElementById("btnBackup").addEventListener("click", async () => {
 
 /* ================= طباعة / نسخ / تصدير ================= */
 
-document.getElementById("btnPrint").addEventListener("click", () => window.print());
+on("btnPrint", "click", () => {
+  if (quoteMode === "internal") {
+    if (!confirm("⚠️ أنت في وضع التقرير الداخلي الذي يحتوي التكاليف والأرباح.\n\nلطباعة عرض يُرسل للعميل: اختر \"موافق\" وسننتقل تلقائياً لعرض العميل ثم نطبع.\n(اختر \"إلغاء\" لطباعة التقرير الداخلي كما هو)")) {
+      window.print();
+      return;
+    }
+    setQuoteMode("client");
+    setTimeout(() => window.print(), 150);
+    return;
+  }
+  window.print();
+});
 
-document.getElementById("btnExportExcel").addEventListener("click", async () => {
+on("btnExportExcel", "click", async () => {
   const c = calcFull();
   const client = CLIENTS.find(x => x.id === meta.clientId);
   const payload = {
@@ -959,7 +1235,7 @@ document.getElementById("btnExportExcel").addEventListener("click", async () => 
   }
 });
 
-document.getElementById("btnCopySummary").addEventListener("click", () => {
+on("btnCopySummary", "click", () => {
   const c = calcFull();
   const cur = CALC.CURRENCIES[state.project.currency].sym;
   const lines = [];
@@ -1037,17 +1313,17 @@ function fillCatCategorySelect(kind) {
   sel.innerHTML = `<option value="0">كل الفئات</option>` + cats.map(c => `<option value="${c.id}" ${String(c.id) === prev ? "selected" : ""}>${esc(c.name)}</option>`).join("");
 }
 
-document.getElementById("catKind").addEventListener("change", e => {
+on("catKind", "change", e => {
   fillCatCategorySelect(e.target.value);
   renderCatalog();
 });
-document.getElementById("catSystem").addEventListener("change", renderCatalog);
-document.getElementById("catCategory").addEventListener("change", renderCatalog);
-document.getElementById("catSearch").addEventListener("input", () => {
+on("catSystem", "change", renderCatalog);
+on("catCategory", "change", renderCatalog);
+on("catSearch", "input", () => {
   clearTimeout(window.__catSearchT);
   window.__catSearchT = setTimeout(renderCatalog, 300);
 });
-document.getElementById("catBody").addEventListener("click", e => {
+on("catBody", "click", e => {
   const hist = e.target.closest("[data-hist]");
   if (hist) { openHistory(parseInt(hist.dataset.hist)); return; }
   const edit = e.target.closest("[data-edit]");
@@ -1087,7 +1363,7 @@ function openItemEditor(id) {
   itemModal.classList.add("show");
 }
 
-document.getElementById("itemSave").addEventListener("click", async () => {
+on("itemSave", "click", async () => {
   const name = document.getElementById("itName").value.trim();
   if (!name) { toast("أدخل اسم الصنف"); return; }
   const categoryName = document.getElementById("itCategory").value;
@@ -1118,10 +1394,10 @@ document.getElementById("itemSave").addEventListener("click", async () => {
   }
 });
 
-document.getElementById("itemClose").addEventListener("click", () => itemModal.classList.remove("show"));
+on("itemClose", "click", () => itemModal.classList.remove("show"));
 itemModal.addEventListener("click", e => { if (e.target === itemModal) itemModal.classList.remove("show"); });
 
-document.getElementById("btnAddCatalogItem").addEventListener("click", () => openItemEditor(null));
+on("btnAddCatalogItem", "click", () => openItemEditor(null));
 
 async function toggleItem(id) {
   const it = CATALOG.find(x => x.id === id);
@@ -1157,14 +1433,14 @@ async function openHistory(id) {
   }
 }
 
-document.getElementById("historyClose").addEventListener("click", () => historyModal.classList.remove("show"));
+on("historyClose", "click", () => historyModal.classList.remove("show"));
 historyModal.addEventListener("click", e => { if (e.target === historyModal) historyModal.classList.remove("show"); });
 
 /* --- تحديث أسعار شامل --- */
 
 const bulkModal = document.getElementById("bulkModal");
 
-document.getElementById("btnBulkUpdate").addEventListener("click", () => {
+on("btnBulkUpdate", "click", () => {
   const kind = document.getElementById("catKind").value;
   document.getElementById("bulkKind").value = kind;
   fillBulkCategories(kind);
@@ -1180,9 +1456,9 @@ function fillBulkCategories(kind) {
   sel.innerHTML = `<option value="0">كل الفئات</option>` + cats.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
 }
 
-document.getElementById("bulkKind").addEventListener("change", e => fillBulkCategories(e.target.value));
+on("bulkKind", "change", e => fillBulkCategories(e.target.value));
 
-document.getElementById("bulkRun").addEventListener("click", async () => {
+on("bulkRun", "click", async () => {
   const pct = num(document.getElementById("bulkPct").value);
   if (!pct) { toast("أدخل نسبة التحديث (يمكن أن تكون سالبة)!"); return; }
   const payload = {
@@ -1202,7 +1478,7 @@ document.getElementById("bulkRun").addEventListener("click", async () => {
   }
 });
 
-document.getElementById("bulkClose").addEventListener("click", () => bulkModal.classList.remove("show"));
+on("bulkClose", "click", () => bulkModal.classList.remove("show"));
 bulkModal.addEventListener("click", e => { if (e.target === bulkModal) bulkModal.classList.remove("show"); });
 
 /* ================= العملاء ================= */
@@ -1240,7 +1516,7 @@ async function renderClients() {
   }
 }
 
-document.getElementById("clientSearch").addEventListener("input", () => {
+on("clientSearch", "input", () => {
   clearTimeout(window.__clSearchT);
   window.__clSearchT = setTimeout(renderClients, 300);
 });
@@ -1260,9 +1536,9 @@ function openClientEditor(id) {
   clientModal.classList.add("show");
 }
 
-document.getElementById("btnAddClient").addEventListener("click", () => openClientEditor(null));
+on("btnAddClient", "click", () => openClientEditor(null));
 
-document.getElementById("clientBody").addEventListener("click", e => {
+on("clientBody", "click", e => {
   const edit = e.target.closest("[data-editcl]");
   if (edit) { openClientEditor(parseInt(edit.dataset.editcl)); return; }
   const del = e.target.closest("[data-delcl]");
@@ -1273,7 +1549,7 @@ document.getElementById("clientBody").addEventListener("click", e => {
   }
 });
 
-document.getElementById("cmSave").addEventListener("click", async () => {
+on("cmSave", "click", async () => {
   const name = document.getElementById("cmName").value.trim();
   if (!name) { toast("أدخل اسم العميل"); return; }
   const payload = {
@@ -1295,7 +1571,7 @@ document.getElementById("cmSave").addEventListener("click", async () => {
   }
 });
 
-document.getElementById("clientClose").addEventListener("click", () => clientModal.classList.remove("show"));
+on("clientClose", "click", () => clientModal.classList.remove("show"));
 clientModal.addEventListener("click", e => { if (e.target === clientModal) clientModal.classList.remove("show"); });
 
 /* ================= إعدادات الشركة (النافذة) ================= */
@@ -1320,11 +1596,11 @@ function openCompanyModal() {
   companyModal.classList.add("show");
 }
 
-document.getElementById("btnCompanySettings").addEventListener("click", openCompanyModal);
-document.getElementById("companyClose").addEventListener("click", () => companyModal.classList.remove("show"));
+on("btnCompanySettings", "click", openCompanyModal);
+on("companyClose", "click", () => companyModal.classList.remove("show"));
 companyModal.addEventListener("click", e => { if (e.target === companyModal) companyModal.classList.remove("show"); });
 
-document.getElementById("cmLogoInput").addEventListener("change", e => {
+on("cmLogoInput", "change", e => {
   const file = e.target.files && e.target.files[0];
   if (!file) return;
   if (!file.type.startsWith("image/")) { toast("اختر ملف صورة"); return; }
@@ -1339,13 +1615,13 @@ document.getElementById("cmLogoInput").addEventListener("change", e => {
   reader.readAsDataURL(file);
 });
 
-document.getElementById("cmRemoveLogo").addEventListener("click", () => {
+on("cmRemoveLogo", "click", () => {
   COMPANY.logo = "";
   document.getElementById("cmLogoPreview").style.display = "none";
   document.getElementById("cmLogoInput").value = "";
 });
 
-document.getElementById("companySave").addEventListener("click", async () => {
+on("companySave", "click", async () => {
   COMPANY.name = document.getElementById("cmName").value.trim() || COMPANY_DEFAULTS.name;
   COMPANY.slogan = document.getElementById("cmSlogan").value.trim();
   COMPANY.phone = document.getElementById("cmPhone").value.trim();
@@ -1385,11 +1661,13 @@ async function initApp() {
   try { CLIENTS = await API.clientsList(""); } catch (e) { CLIENTS = []; }
   await refreshCatalog();
 
+  bindProjectInputs();
+  bindMarginInputs();
   fillCatCategorySelect("all");
   renderAll();
 }
 
 /* واجهة تصحيح (للمطورين والاختبارات) */
-window.__fp = { state: () => state, meta: () => meta, CATALOG: () => CATALOG, CLIENTS: () => CLIENTS, COMPANY: () => COMPANY, loadCompany, openCompanyModal };
+window.__fp = { state: () => state, meta: () => meta, CATALOG: () => CATALOG, CLIENTS: () => CLIENTS, COMPANY: () => COMPANY, loadCompany, openCompanyModal, quoteMode: () => quoteMode };
 
 initApp();

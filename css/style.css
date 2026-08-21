@@ -259,10 +259,16 @@ tr.row-danger td { background: rgba(248,113,113,.07); }
 
 /* ===== Print ===== */
 @media print {
-  body { background: #fff; }
-  .sidebar, .topbar, .quote-actions, .nav, .card h2, .analysis-grid, .advice-list, .card { display: none; }
+  body { background: #fff !important; }
+  .sidebar, .topbar, .quote-actions, .nav, .analysis-grid, .advice-list { display: none !important; }
+  /* إظهار تبويب العرض فقط */
+  .tab-panel { display: none !important; }
+  #tab-quote { display: block !important; }
+  #tab-quote .card h2, #tab-quote .hint { display: none !important; }
+  /* إخفاء بطاقة التحليل */
+  #analysisCard { display: none !important; }
   .main { padding: 0; }
-  .quote-doc { border: none; padding: 0; }
+  .quote-doc { border: none; box-shadow: none; padding: 0; max-width: 100%; }
   body * { visibility: hidden; }
   #quotePreview, #quotePreview * { visibility: visible; }
   #quotePreview { position: absolute; inset: 0; width: 100%; }
@@ -290,3 +296,21 @@ tr.row-danger td { background: rgba(248,113,113,.07); }
 
 /* ===== شعار الشركة في عرض السعر ===== */
 .q-logo { max-height: 56px; max-width: 150px; object-fit: contain; margin-bottom: 4px; }
+
+/* ===== شريط استرداد البيانات ===== */
+.restore-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 10px; margin: 10px 0; border: 1px dashed var(--border);
+  border-radius: 10px; background: rgba(56,189,248,.05);
+}
+#legacyScanResult { margin-bottom: 10px; }
+#legacyScanResult .proj-item { margin-bottom: 6px; }
+
+/* ===== تحذير التقرير الداخلي ===== */
+.internal-warning {
+  background: #fde8e8; color: #b91c1c; border: 2px solid #ef4444;
+  padding: 10px 14px; border-radius: 8px; font-weight: 800; font-size: 14px;
+  text-align: center; margin-bottom: 14px;
+}
+.quote-modes { display: inline-flex; gap: 6px; align-items: center; }
+.quote-modes-label { font-size: 12px; color: var(--muted); margin-left: 4px; }

@@ -296,13 +296,19 @@
     <div class="card">
       <h2>عرض السعر النهائي</h2>
       <div class="quote-actions">
+        <div class="quote-modes">
+          <span class="quote-modes-label">وضع العرض:</span>
+          <button class="btn btn-primary btn-sm" id="btnQuoteClient">📄 عرض العميل (بدون تكاليف)</button>
+          <button class="btn btn-secondary btn-sm" id="btnQuoteInternal">📊 التقرير الداخلي</button>
+        </div>
         <button class="btn btn-primary" id="btnPrint">طباعة / حفظ PDF</button>
         <button class="btn btn-secondary" id="btnExportExcel">تصدير Excel</button>
         <button class="btn btn-secondary" id="btnCopySummary">نسخ الملخص</button>
       </div>
+      <p class="hint" id="quoteModeHint"></p>
       <div id="quotePreview"></div>
     </div>
-    <div class="card">
+    <div class="card" id="analysisCard">
       <h2>التحليل الذكي والملاحظات</h2>
       <div id="analysisPanel"></div>
     </div>
@@ -389,6 +395,7 @@
     <div class="modal-body">
       <div class="toolbar">
         <select id="libCategory">
+          <option value="all">كل الأنظمة (253 صنف)</option>
           <option value="alarm">أنظمة الإنذار</option>
           <option value="fighting">أنظمة الإطفاء</option>
         </select>
@@ -428,6 +435,13 @@
         <input type="text" id="projectsSearch" placeholder="بحث بالاسم / الرقم / العميل...">
         <button class="btn btn-secondary" id="btnImportLegacy">استيراد المشاريع القديمة</button>
       </div>
+      <div class="restore-bar">
+        <span class="hint" style="margin:0">استرداد البيانات:</span>
+        <button class="btn btn-secondary btn-sm" id="btnScanLegacy">🔍 بحث عن قواعد قديمة</button>
+        <button class="btn btn-secondary btn-sm" id="btnImportJson">📂 استيراد من ملف احتياطي</button>
+        <button class="btn btn-secondary btn-sm" id="btnOpenDataFolder">📁 مجلد البيانات</button>
+      </div>
+      <div id="legacyScanResult"></div>
       <div id="projectsList"></div>
     </div>
   </div>

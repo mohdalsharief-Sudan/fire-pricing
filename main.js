@@ -1,13 +1,40 @@
-const { app, BrowserWindow, Menu, dialog } = require("electron");
+const { app, BrowserWindow, Menu, dialog, shell } = require("electron");
 const path = require("path");
+const fs = require("fs");
 
 let db = null;
 let dbReady = false;
+let dbPath = "";
+
+/* المسارات البديلة لقاعدة البيانات (نسخ مثبتة قديمة بأسماء مختلفة) */
+function legacyDbCandidates() {
+  const userData = app.getPath("userData");
+  const parent = path.dirname(userData);
+  return [
+    path.join(parent, "نظام التسعير الذكي للحماية من الحرائق", "fire-pricing.db"),
+    path.join(parent, "Electron", "fire-pricing.db"),
+    path.join(parent, "fire-pricing", "fire-pricing.db")
+  ].filter(p => p !== dbPath);
+}
 
 function initDatabase() {
   try {
     const { createDatabase } = require("./src/db/database.js");
-    const dbPath = path.join(app.getPath("userData"), "fire-pricing.db");
+    dbPath = path.join(app.getPath("userData"), "fire-pricing.db");
+
+    /* إن لم توجد القاعدة الأساسية ووجدت قاعدة قديمة في مسار آخر — انسخها تلقائياً */
+    if (!fs.existsSync(dbPath)) {
+      const legacy = legacyDbCandidates().find(p => fs.existsSync(p));
+      if (legacy) {
+        try {
+          fs.copyFileSync(legacy, dbPath);
+          console.log(`[DB] تم استيراد قاعدة البيانات القديمة تلقائياً من: ${legacy}`);
+        } catch (e) {
+          console.error("[DB] فشل نسخ القاعدة القديمة:", e.message);
+        }
+      }
+    }
+
     db = createDatabase(dbPath);
     dbReady = true;
     console.log(`[DB] قاعدة البيانات جاهزة: ${dbPath}`);

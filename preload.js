@@ -11,7 +11,8 @@ const CHANNELS = [
   "clients:list", "clients:save", "clients:delete",
   "projects:save", "projects:list", "projects:get", "projects:delete",
   "projects:importLegacy", "db:exportJson", "project:exportExcel",
-  "settings:get", "settings:save"
+  "settings:get", "settings:save",
+  "db:openDataFolder", "db:scanLegacy", "db:importFromPath", "db:importJsonFile"
 ];
 
 const api = {};

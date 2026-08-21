@@ -138,6 +138,75 @@ test("إعدادات الشركة: حفظ واسترجاع", () => {
   assert.strictEqual(db.getSettings().phone, undefined);
 });
 
+test("استيراد من قاعدة SQLite قديمة (ملف) يحافظ على الأرقام والبنود", () => {
+  const sqlite = require("better-sqlite3");
+  const fs = require("fs");
+  const os = require("os");
+  const path = require("path");
+  const tmp = path.join(os.tmpdir(), "fp-olddb-" + Date.now() + ".db");
+  const src = fs.readFileSync(path.join(__dirname, "database.js"), "utf8");
+  const v1 = src.match(/const SCHEMA_V1 = `([\s\S]*?)`;/)[1];
+  const v2 = src.match(/const SCHEMA_V2 = `([\s\S]*?)`;/)[1];
+  // قاعدة قديمة v3 schema (بلا عمود system)
+  let old = new sqlite(tmp);
+  old.exec(v1); old.exec(v2);
+  old.pragma("user_version = 3");
+  old.prepare("INSERT INTO clients (name, city) VALUES (?,?)").run("عميل قديم", "جدة");
+  const cid = old.prepare("SELECT id FROM clients").get().id;
+  old.prepare(`INSERT INTO projects (quote_no, client_id, name, currency, vat, margins, status) VALUES (?,?,?,?,?,?,?)`)
+    .run("Q-2025-0007", cid, "مشروع قديم", "SAR", 15, "{}", "draft");
+  const pid = old.prepare("SELECT id FROM projects").get().id;
+  old.prepare(`INSERT INTO project_items (project_id, kind, name, qty, supply_cost, install_cost) VALUES (?,?,?,?,?,?)`)
+    .run(pid, "equipment", "مضخة قديمة", 1, 5000, 500);
+  old.prepare(`INSERT INTO project_items (project_id, kind, name, qty, unit_cost) VALUES (?,?,?,?,?)`)
+    .run(pid, "material", "كابل قديم", 50, 8);
+  old.prepare(`INSERT INTO project_items (project_id, kind, name, service_value, service_type) VALUES (?,?,?,?,?)`)
+    .run(pid, "service", "خدمة قديمة", 300, "amount");
+  old.close();
+
+  const db = freshDb();
+  const res = db.importFromLegacyDb(tmp);
+  assert.strictEqual(res.projects, 1);
+  assert.strictEqual(res.clients, 1);
+  assert.ok(res.error === undefined);
+  // الاستيراد مرة ثانية لا يكرر (حسب رقم العرض)
+  const res2 = db.importFromLegacyDb(tmp);
+  assert.strictEqual(res2.projects, 0);
+  const list = db.listProjects();
+  assert.strictEqual(list.length, 1);
+  const p = db.getProject(list[0].id);
+  assert.strictEqual(p.quoteNo, "Q-2025-0007");
+  assert.strictEqual(p.items.length, 3);
+  const eq = p.items.find(i => i.kind === "equipment");
+  assert.strictEqual(eq.name, "مضخة قديمة");
+  assert.strictEqual(eq.supply_cost, 5000);
+  fs.unlinkSync(tmp);
+});
+
+test("استيراد من ملف JSON احتياطي (تنسيقات متعددة)", () => {
+  const db = freshDb();
+  // تنسيق تصدير SQLite كامل
+  const dump = JSON.parse(db.exportJson());
+  const fresh = freshDb();
+  const r1 = fresh.importFromJson(JSON.stringify(dump));
+  assert.ok(r1.projects >= 0);
+  assert.strictEqual(r1.error, undefined);
+
+  // تنسيق مشروع قديم واحد {project, equipment...}
+  const legacy = {
+    project: { name: "مشروع JSON قديم", vat: 15 },
+    equipment: [{ name: "جهاز", qty: 2, supplyCost: 100, installCost: 50 }],
+    materials: [], labor: [], services: [{ name: "خدمة", type: "amount", value: 200 }]
+  };
+  const r2 = fresh.importFromJson(JSON.stringify(legacy));
+  assert.strictEqual(r2.projects, 1);
+  const p = fresh.listProjects().find(x => x.name === "مشروع JSON قديم");
+  assert.ok(p);
+  const loaded = fresh.getProject(p.id);
+  assert.strictEqual(loaded.items.length, 2);
+  assert.ok(loaded.items.some(i => i.kind === "service" && i.service_value === 200));
+});
+
 test("الترقية من v1 إلى v2 تحافظ على البيانات", () => {
   const sqlite = require("better-sqlite3");
   const fs = require("fs");
@@ -152,7 +221,7 @@ test("الترقية من v1 إلى v2 تحافظ على البيانات", () =
   s.pragma("user_version = 1");
   s.close();
   const db = createDatabase(tmp);
-  assert.strictEqual(db.raw.pragma("user_version", { simple: true }), 2);
+  assert.strictEqual(db.raw.pragma("user_version", { simple: true }), 3);
   assert.deepStrictEqual(db.getSettings(), {});
   db.saveSettings({ name: "بعد الترقية" });
   assert.strictEqual(db.getSettings().name, "بعد الترقية");

@@ -34,7 +34,11 @@ window.FireAPI = (function () {
       exportBackup: () => call("db_exportJson"),
       exportExcel: (p) => call("project_exportExcel", p),
       settingsGet: () => call("settings_get"),
-      settingsSave: (p) => call("settings_save", p)
+      settingsSave: (p) => call("settings_save", p),
+      openDataFolder: () => call("db_openDataFolder"),
+      scanLegacy: () => call("db_scanLegacy"),
+      importFromPath: (p) => call("db_importFromPath", p),
+      importJsonFile: () => call("db_importJsonFile")
     };
   }
 
@@ -252,6 +256,67 @@ window.FireAPI = (function () {
     },
     settingsGet: () => delay(ls.get(K_SET) || {}),
     settingsSave: (p) => { ls.set(K_SET, p || {}); return delay(p || {}); },
+    openDataFolder: () => delay({ current: "وضع المتصفح" }),
+    scanLegacy: () => delay({ current: "", found: [] }),
+    importFromPath: () => delay({ error: "متاح فقط في وضع سطح المكتب", clients: 0, projects: 0 }),
+    importJsonFile: () => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = ".json,application/json";
+      return new Promise(resolve => {
+        input.onchange = () => {
+          const file = input.files && input.files[0];
+          if (!file) { resolve({ canceled: true }); return; }
+          const reader = new FileReader();
+          reader.onload = async () => {
+            try {
+              const data = JSON.parse(reader.result);
+              let projects = [];
+              let clients = [];
+              if (Array.isArray(data.projects)) {
+                projects = data.projects;
+                clients = data.clients || [];
+              } else if (data.project) {
+                projects = [data];
+              } else {
+                resolve({ canceled: false, result: { error: "لا يمكن التعرف على محتوى الملف", clients: 0, projects: 0 } });
+                return;
+              }
+              // حفظ العملاء
+              for (const c of clients) { if (c && c.name) await window.FireAPI.clientsSave(c); }
+              // حفظ المشاريع
+              let imported = 0;
+              for (const p of projects) {
+                const year = new Date().getFullYear();
+                const list = ls.get(K_PROJ) || [];
+                const qn = p.quoteNo || p.quote_no || `Q-${year}-${String(list.length + 1).padStart(4, "0")}`;
+                if (list.some(x => x.quoteNo === qn)) continue;
+                const items = (p.items || []).map(it => ({
+                  kind: it.kind, name: it.name, qty: it.qty, unit: it.unit,
+                  supply_cost: it.supply_cost, install_cost: it.install_cost,
+                  unit_cost: it.unit_cost, workers: it.workers, days: it.days,
+                  daily_cost: it.daily_cost, service_type: it.service_type, service_value: it.service_value,
+                  system: it.system || ""
+                }));
+                await window.FireAPI.projectsSave({
+                  id: null, quoteNo: qn, clientId: null, clientName: p.clientName || "",
+                  name: p.name || "مشروع مستورد", location: p.location || "", date: p.date || "",
+                  area: p.area || 0, floors: p.floors || 0, currency: p.currency || "SAR",
+                  vat: p.vat || 15, validity: p.validity || 30, margins: p.margins || {},
+                  status: p.status || "draft", total: p.total || 0, notes: p.notes || "", items
+                });
+                imported++;
+              }
+              resolve({ canceled: false, result: { clients: clients.length, projects: imported } });
+            } catch (e) {
+              resolve({ canceled: false, result: { error: e.message, clients: 0, projects: 0 } });
+            }
+          };
+          reader.readAsText(file);
+        };
+        input.click();
+      });
+    },
     exportBackup: () => {
       const data = JSON.stringify({
         exported_at: new Date().toISOString(), version: 2, mode: "local",

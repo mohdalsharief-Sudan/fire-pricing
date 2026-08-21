@@ -3,7 +3,7 @@
  * ipc.js — معالجات الاتصال بين الواجهة وقاعدة البيانات (IPC)
  * كل قناة تُرجع { ok: true, data } أو { ok: false, error }
  */
-const { ipcMain, dialog, BrowserWindow } = require("electron");
+const { ipcMain, dialog, BrowserWindow, app, shell } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const ExcelJS = require("exceljs");
@@ -47,6 +47,45 @@ function registerIpc(db) {
   /* ---------- إعدادات الشركة ---------- */
   handle("settings:get", () => db.getSettings());
   handle("settings:save", (p) => db.saveSettings(p));
+
+  /* ---------- استيراد واسترداد البيانات القديمة ---------- */
+  handle("db:openDataFolder", () => {
+    shell.openPath(app.getPath("userData"));
+    return true;
+  });
+
+  handle("db:scanLegacy", () => {
+    const userData = app.getPath("userData");
+    const parent = path.dirname(userData);
+    const names = [
+      path.basename(userData),
+      "نظام التسعير الذكي للحماية من الحرائق",
+      "Electron",
+      "fire-pricing"
+    ];
+    const found = [];
+    names.forEach(n => {
+      const p = path.join(parent, n, "fire-pricing.db");
+      if (fs.existsSync(p)) {
+        found.push({ path: p, name: n, isCurrent: p === path.join(userData, "fire-pricing.db") });
+      }
+    });
+    return { current: path.join(userData, "fire-pricing.db"), found };
+  });
+
+  handle("db:importFromPath", (p) => db.importFromLegacyDb(p.path));
+
+  handle("db:importJsonFile", async (p, event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const res = await dialog.showOpenDialog(win, {
+      title: "اختر ملف النسخة الاحتياطية (JSON)",
+      filters: [{ name: "JSON", extensions: ["json"] }],
+      properties: ["openFile"]
+    });
+    if (res.canceled || !res.filePaths.length) return { canceled: true };
+    const text = fs.readFileSync(res.filePaths[0], "utf8");
+    return { canceled: false, result: db.importFromJson(text) };
+  });
 
   /* ---------- النسخ الاحتياطي ---------- */
   handle("db:exportJson", async (p, event) => {

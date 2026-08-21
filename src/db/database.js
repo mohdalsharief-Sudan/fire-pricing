@@ -14,7 +14,7 @@ try {
   Database = null;
 }
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 const SCHEMA_V1 = `
 CREATE TABLE IF NOT EXISTS categories (
@@ -112,6 +112,10 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 `;
 
+const SCHEMA_V3 = `
+ALTER TABLE project_items ADD COLUMN system TEXT DEFAULT '';
+`;
+
 /* ==================== فتح القاعدة وتهيئتها ==================== */
 
 function createDatabase(dbPath) {
@@ -139,6 +143,10 @@ function migrate(db) {
     db.exec(SCHEMA_V2);
     db.prepare("INSERT OR IGNORE INTO settings (id, data) VALUES (1, '{}')").run();
     db.pragma("user_version = 2");
+  }
+  if (v < 3) {
+    try { db.exec(SCHEMA_V3); } catch (e) { /* العمود قد يكون موجوداً */ }
+    db.pragma("user_version = 3");
   }
 }
 
@@ -336,8 +344,8 @@ function makeApi(db) {
   function saveProject(p) {
     const itemSql = db.prepare(`
       INSERT INTO project_items (project_id, item_id, kind, name, qty, unit, supply_cost, install_cost,
-                                 unit_cost, workers, days, daily_cost, service_type, service_value, sort)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+                                 unit_cost, workers, days, daily_cost, service_type, service_value, sort, system)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
     const insertProject = db.prepare(`
       INSERT INTO projects (quote_no, client_id, name, location, date, area, floors, currency,
                             vat, validity, margins, status, total, notes)
@@ -367,7 +375,7 @@ function makeApi(db) {
       (p.items || []).forEach((it, i) => {
         itemSql.run(id, it.itemId || null, it.kind, it.name || "", it.qty || 0, it.unit || "",
           it.supply_cost || 0, it.install_cost || 0, it.unit_cost || 0, it.workers || 0,
-          it.days || 0, it.daily_cost || 0, it.service_type || "amount", it.service_value || 0, i);
+          it.days || 0, it.daily_cost || 0, it.service_type || "amount", it.service_value || 0, i, it.system || "");
       });
     });
     tx();
@@ -439,6 +447,145 @@ function makeApi(db) {
     return imported;
   }
 
+  /* ==================== استيراد من قاعدة بيانات قديمة (ملف SQLite) ==================== */
+
+  function importFromLegacyDb(oldPath) {
+    if (!Database) return { error: "better-sqlite3 غير متوفر", clients: 0, projects: 0 };
+    let old;
+    try {
+      old = new Database(oldPath, { readonly: true, fileMustExist: true });
+    } catch (e) {
+      return { error: "تعذر فتح القاعدة القديمة: " + e.message, clients: 0, projects: 0 };
+    }
+    try {
+      const hasClients = old.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='clients'").get();
+      const hasProjects = old.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='projects'").get();
+      let clientsImported = 0, projectsImported = 0;
+
+      const tx = db.transaction(() => {
+        if (hasClients) {
+          const clients = old.prepare("SELECT * FROM clients").all();
+          const ins = db.prepare("INSERT INTO clients (name, phone, email, cr_number, city, notes) VALUES (?,?,?,?,?,?)");
+          clients.forEach(c => {
+            const dup = db.prepare("SELECT id FROM clients WHERE name=? COLLATE NOCASE").get(c.name);
+            if (!dup) { ins.run(c.name, c.phone || "", c.email || "", c.cr_number || "", c.city || "", c.notes || ""); clientsImported++; }
+          });
+        }
+        if (hasProjects) {
+          const projects = old.prepare("SELECT * FROM projects").all();
+          projects.forEach(p => {
+            const dup = db.prepare("SELECT id FROM projects WHERE quote_no=?").get(p.quote_no);
+            if (dup) return;
+            const items = old.prepare("SELECT * FROM project_items WHERE project_id=? ORDER BY sort").all(p.id);
+            const mapped = items.map(i => ({
+              kind: i.kind, name: i.name, qty: i.qty, unit: i.unit,
+              supply_cost: i.supply_cost, install_cost: i.install_cost,
+              unit_cost: i.unit_cost, workers: i.workers, days: i.days,
+              daily_cost: i.daily_cost, service_type: i.service_type, service_value: i.service_value,
+              system: i.system || ""
+            }));
+            saveProject({
+              quoteNo: p.quote_no, clientId: null, name: p.name || "", location: p.location || "",
+              date: p.date || "", area: p.area || 0, floors: p.floors || 0,
+              currency: p.currency || "SAR", vat: p.vat || 0, validity: p.validity || 30,
+              margins: safeJson(p.margins), status: p.status || "draft",
+              total: p.total || 0, notes: (p.notes || "") + (p.notes ? " | " : "") + "مستورد من قاعدة قديمة",
+              items: mapped
+            });
+            projectsImported++;
+          });
+        }
+      });
+      tx();
+      old.close();
+      return { clients: clientsImported, projects: projectsImported };
+    } catch (e) {
+      try { old.close(); } catch (x) { /* ignore */ }
+      return { error: e.message, clients: 0, projects: 0 };
+    }
+  }
+
+  /* ==================== استيراد من ملف JSON احتياطي ==================== */
+
+  function importFromJson(text) {
+    let data;
+    try { data = JSON.parse(text); } catch (e) { return { error: "الملف ليس JSON صالحاً: " + e.message, clients: 0, projects: 0 }; }
+
+    // تنسيق 1: تصدير قاعدة كامل SQLite {version:2, projects, project_items, clients}
+    if (Array.isArray(data.projects) && Array.isArray(data.project_items)) {
+      let clientsImported = 0, projectsImported = 0;
+      const tx = db.transaction(() => {
+        (data.clients || []).forEach(c => {
+          const dup = db.prepare("SELECT id FROM clients WHERE name=? COLLATE NOCASE").get(c.name);
+          if (!dup) {
+            db.prepare("INSERT INTO clients (name, phone, email, cr_number, city, notes) VALUES (?,?,?,?,?,?)")
+              .run(c.name, c.phone || "", c.email || "", c.cr_number || "", c.city || "", c.notes || "");
+            clientsImported++;
+          }
+        });
+        data.projects.forEach(p => {
+          const dup = db.prepare("SELECT id FROM projects WHERE quote_no=?").get(p.quote_no);
+          if (dup) return;
+          const items = data.project_items.filter(i => i.project_id === p.id).map(i => ({
+            kind: i.kind, name: i.name, qty: i.qty, unit: i.unit,
+            supply_cost: i.supply_cost, install_cost: i.install_cost,
+            unit_cost: i.unit_cost, workers: i.workers, days: i.days,
+            daily_cost: i.daily_cost, service_type: i.service_type, service_value: i.service_value,
+            system: i.system || ""
+          }));
+          saveProject({
+            quoteNo: p.quote_no, clientId: null, name: p.name || "", location: p.location || "",
+            date: p.date || "", area: p.area || 0, floors: p.floors || 0,
+            currency: p.currency || "SAR", vat: p.vat || 0, validity: p.validity || 30,
+            margins: safeJson(p.margins), status: p.status || "draft",
+            total: p.total || 0, notes: p.notes || "",
+            items
+          });
+          projectsImported++;
+        });
+      });
+      tx();
+      return { clients: clientsImported, projects: projectsImported };
+    }
+
+    // تنسيق 2: تصدير وضع المتصفح {projects: [{quoteNo, name, items...}]}
+    if (Array.isArray(data.projects)) {
+      let projectsImported = 0;
+      const tx = db.transaction(() => {
+        data.projects.forEach(p => {
+          const dup = db.prepare("SELECT id FROM projects WHERE quote_no=?").get(p.quoteNo);
+          if (dup) return;
+          const items = (p.items || []).map(it => ({
+            kind: it.kind, name: it.name, qty: it.qty, unit: it.unit,
+            supply_cost: it.supply_cost, install_cost: it.install_cost,
+            unit_cost: it.unit_cost, workers: it.workers, days: it.days,
+            daily_cost: it.daily_cost, service_type: it.service_type, service_value: it.service_value,
+            system: it.system || ""
+          }));
+          saveProject({
+            quoteNo: p.quoteNo, clientId: null, name: p.name || "", location: p.location || "",
+            date: p.date || "", area: p.area || 0, floors: p.floors || 0,
+            currency: p.currency || "SAR", vat: p.vat || 0, validity: p.validity || 30,
+            margins: p.margins || {}, status: p.status || "draft",
+            total: p.total || 0, notes: p.notes || "",
+            items
+          });
+          projectsImported++;
+        });
+      });
+      tx();
+      return { clients: 0, projects: projectsImported };
+    }
+
+    // تنسيق 3: مشروع قديم واحد {project, equipment, materials, labor, services, margins}
+    if (data.project) {
+      const n = importLegacy([data]);
+      return { clients: 0, projects: n };
+    }
+
+    return { error: "لا يمكن التعرف على محتوى الملف", clients: 0, projects: 0 };
+  }
+
   /* ---------- إعدادات الشركة ---------- */
 
   function getSettings() {
@@ -484,6 +631,7 @@ function makeApi(db) {
     getPriceHistory, bulkUpdatePrices,
     listClients, saveClient, deleteClient,
     saveProject, listProjects, getProject, deleteProject, importLegacy,
+    importFromLegacyDb, importFromJson,
     getSettings, saveSettings,
     exportJson, close,
     raw: db
