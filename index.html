@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام التسعير الذكي لأنظمة الإطفاء والإنذار</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-icon">S</div>
+    <div class="brand-text">
+      <strong>نظام التسعير الذكي</strong>
+      <span>لأنظمة الإطفاء والإنذار</span>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a href="#project" class="nav-item active" data-tab="project">
+      <span class="nav-ico">P</span> معلومات المشروع
+    </a>
+    <a href="#equipment" class="nav-item" data-tab="equipment">
+      <span class="nav-ico">E</span> الأجهزة والمعدات
+    </a>
+    <a href="#labor" class="nav-item" data-tab="labor">
+      <span class="nav-ico">L</span> العمالة
+    </a>
+    <a href="#materials" class="nav-item" data-tab="materials">
+      <span class="nav-ico">M</span> المواد
+    </a>
+    <a href="#services" class="nav-item" data-tab="services">
+      <span class="nav-ico">S</span> الخدمات الهندسية
+    </a>
+    <a href="#margin" class="nav-item" data-tab="margin">
+      <span class="nav-ico">M</span> الهوامش والضرائب
+    </a>
+    <a href="#quote" class="nav-item" data-tab="quote">
+      <span class="nav-ico">Q</span> عرض السعر النهائي
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="btn btn-ghost btn-block" id="btnSaveProject">حفظ المشروع</button>
+    <button class="btn btn-ghost btn-block" id="btnLoadProject">استرجاع مشروع</button>
+    <button class="btn btn-danger-ghost btn-block" id="btnNewProject">مشروع جديد</button>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <h1 id="pageTitle">معلومات المشروع</h1>
+    <div class="topbar-actions">
+      <span id="currencyBadge" class="badge">العملة: ر.س</span>
+    </div>
+  </header>
+
+  <!-- ====== TAB: PROJECT ====== -->
+  <section class="tab-panel active" id="tab-project">
+    <div class="card">
+      <h2>بيانات المشروع</h2>
+      <div class="grid-2">
+        <div class="field">
+          <label>اسم المشروع</label>
+          <input type="text" id="projectName" placeholder="مثال: مبنى إداري - نظام إنذار حريق">
+        </div>
+        <div class="field">
+          <label>اسم العميل</label>
+          <input type="text" id="projectClient" placeholder="اسم العميل / الشركة">
+        </div>
+        <div class="field">
+          <label>الموقع</label>
+          <input type="text" id="projectLocation" placeholder="المدينة / الموقع">
+        </div>
+        <div class="field">
+          <label>تاريخ إعداد العرض</label>
+          <input type="date" id="projectDate">
+        </div>
+        <div class="field">
+          <label>العملة</label>
+          <select id="projectCurrency">
+            <option value="SAR" selected>ريال سعودي (ر.س)</option>
+            <option value="EGP">جنيه مصري (ج.م)</option>
+            <option value="AED">درهم إماراتي (د.إ)</option>
+            <option value="USD">دولار أمريكي ($)</option>
+            <option value="JOD">دينار أردني (د.أ)</option>
+            <option value="KWD">دينار كويتي (د.ك)</option>
+            <option value="QAR">ريال قطري (ر.ق)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>نسبة ضريبة القيمة المضافة %</label>
+          <input type="number" id="projectVat" value="15" min="0" step="0.1">
+        </div>
+        <div class="field">
+          <label>صلاحية العرض (أيام)</label>
+          <input type="number" id="projectValidity" value="30" min="1">
+        </div>
+        <div class="field">
+          <label>مساحة المبنى التقريبية (م²) <span class="opt">اختياري</span></label>
+          <input type="number" id="projectArea" placeholder="لمقارنة سعر المتر">
+        </div>
+        <div class="field">
+          <label>عدد الأدوار <span class="opt">اختياري</span></label>
+          <input type="number" id="projectFloors" placeholder="0">
+        </div>
+      </div>
+      <div class="field">
+        <label>ملاحظات</label>
+        <textarea id="projectNotes" rows="3" placeholder="شروط خاصة، نطاق الأعمال، ضمانات..."></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== TAB: EQUIPMENT ====== -->
+  <section class="tab-panel" id="tab-equipment">
+    <div class="card">
+      <h2>الأجهزة والمعدات الموردة</h2>
+      <p class="hint">أضف الأجهزة من المكتبة الجاهزة أو أضف جهازاً مخصصاً. سعر التركيب يُحسب تلقائياً من المعدل لكل جهاز ويمكن تعديله.</p>
+      <div class="toolbar">
+        <select id="eqCategoryFilter">
+          <option value="all">كل الفئات</option>
+          <option value="alarm">أنظمة الإنذار</option>
+          <option value="fighting">أنظمة الإطفاء</option>
+        </select>
+        <button class="btn btn-primary" id="btnAddEquipment">+ إضافة جهاز</button>
+        <button class="btn btn-secondary" id="btnAddFromLibrary">أضف من المكتبة</button>
+        <button class="btn btn-secondary" id="btnEstimateCables">تقدير الكابلات تلقائياً</button>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="eqTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>الجهاز</th>
+              <th>الكمية</th>
+              <th>تكلفة التوريد (وحدة)</th>
+              <th>تكلفة التركيب (وحدة)</th>
+              <th>إجمالي التكلفة</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="eqBody"></tbody>
+        </table>
+        <div class="table-total" id="eqTotal"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== TAB: LABOR ====== -->
+  <section class="tab-panel" id="tab-labor">
+    <div class="card">
+      <h2>تكاليف العمالة</h2>
+      <p class="hint">التكلفة الحقيقية للعمالة (أجور + إقامة + سكن + مواصلات + تأمينات). تُضاف هذه البنود على تكلفة التركيب المحسوبة من الأجهزة.</p>
+      <div class="toolbar">
+        <button class="btn btn-primary" id="btnAddLabor">+ إضافة بند عمالة</button>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="laborTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>بند العمالة</th>
+              <th>عدد العمال</th>
+              <th>أيام العمل</th>
+              <th>التكلفة اليومية للعامل</th>
+              <th>الإجمالي</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="laborBody"></tbody>
+        </table>
+        <div class="table-total" id="laborTotal"></div>
+      </div>
+      <div class="card card-sub" id="laborAdvice">
+        <h3>إرشادات لحساب التكلفة الحقيقية للعامل</h3>
+        <ul id="laborAdviceList"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== TAB: MATERIALS ====== -->
+  <section class="tab-panel" id="tab-materials">
+    <div class="card">
+      <h2>المواد والمستهلكات</h2>
+      <p class="hint">كابلات، مواسير، حوامل، مهمات تثبيت، دهانات، ومواد استهلاكية.</p>
+      <div class="toolbar">
+        <button class="btn btn-primary" id="btnAddMaterial">+ إضافة مادة</button>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="materialTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>المادة</th>
+              <th>الكمية</th>
+              <th>الوحدة</th>
+              <th>تكلفة الوحدة</th>
+              <th>الإجمالي</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="materialBody"></tbody>
+        </table>
+        <div class="table-total" id="materialTotal"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== TAB: SERVICES ====== -->
+  <section class="tab-panel" id="tab-services">
+    <div class="card">
+      <h2>الخدمات الهندسية والتشغيلية</h2>
+      <p class="hint">تكاليف التصميم، التراخيص، الاختبار والتشغيل، الإشراف، والمصاريف غير المباشرة.</p>
+      <div class="toolbar">
+        <button class="btn btn-primary" id="btnAddService">+ إضافة خدمة</button>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="serviceTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>الخدمة</th>
+              <th>القيمة</th>
+              <th>النوع</th>
+              <th>الإجمالي</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="serviceBody"></tbody>
+        </table>
+        <div class="table-total" id="serviceTotal"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== TAB: MARGIN ====== -->
+  <section class="tab-panel" id="tab-margin">
+    <div class="card">
+      <h2>الهوامش والخصومات والضرائب</h2>
+      <div class="grid-3">
+        <div class="field">
+          <label>النفقات العامة والإدارية % (Overhead)</label>
+          <input type="number" id="overheadPct" value="8" min="0" step="0.5">
+          <span class="opt">إيجار، إدارة، سكرتارية، مصاريف مكتب</span>
+        </div>
+        <div class="field">
+          <label>هامش الطوارئ % (Contingency)</label>
+          <input type="number" id="contingencyPct" value="5" min="0" step="0.5">
+          <span class="opt">لتغطية فروق الأسعار والمخاطر</span>
+        </div>
+        <div class="field">
+          <label>هامش الربح % (Profit)</label>
+          <input type="number" id="profitPct" value="15" min="0" step="0.5">
+          <span class="opt">ربح صافي قبل الضريبة</span>
+        </div>
+        <div class="field">
+          <label>الخصم التجاري %</label>
+          <input type="number" id="discountPct" value="0" min="0" step="0.5">
+        </div>
+      </div>
+      <div class="card card-sub" id="marginAdvice"></div>
+    </div>
+  </section>
+
+  <!-- ====== TAB: QUOTE ====== -->
+  <section class="tab-panel" id="tab-quote">
+    <div class="card">
+      <h2>عرض السعر النهائي</h2>
+      <div class="quote-actions">
+        <button class="btn btn-primary" id="btnPrint">طباعة / حفظ PDF</button>
+        <button class="btn btn-secondary" id="btnCopySummary">نسخ الملخص</button>
+      </div>
+      <div id="quotePreview"></div>
+    </div>
+    <div class="card">
+      <h2>التحليل الذكي والملاحظات</h2>
+      <div id="analysisPanel"></div>
+    </div>
+  </section>
+</main>
+
+<!-- Modal: library -->
+<div class="modal-overlay" id="libraryModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>المكتبة المرجعية للأجهزة <span id="libCount" class="badge" style="margin-right:8px"></span></h3>
+      <button class="modal-close" id="libraryClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="toolbar">
+        <select id="libCategory">
+          <option value="alarm">أنظمة الإنذار</option>
+          <option value="fighting">أنظمة الإطفاء</option>
+        </select>
+        <input type="text" id="libSearch" placeholder="بحث...">
+      </div>
+      <div id="libList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: saved projects -->
+<div class="modal-overlay" id="projectsModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>المشاريع المحفوظة</h3>
+      <button class="modal-close" id="projectsClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="projectsList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
