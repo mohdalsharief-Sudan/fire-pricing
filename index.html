@@ -39,11 +39,19 @@
     <a href="#quote" class="nav-item" data-tab="quote">
       <span class="nav-ico">Q</span> عرض السعر النهائي
     </a>
+    <a href="#catalog" class="nav-item" data-tab="catalog">
+      <span class="nav-ico">C</span> الكتالوج والمكتبة
+    </a>
+    <a href="#clients" class="nav-item" data-tab="clients">
+      <span class="nav-ico">C</span> العملاء
+    </a>
   </nav>
 
   <div class="sidebar-footer">
     <button class="btn btn-ghost btn-block" id="btnSaveProject">حفظ المشروع</button>
     <button class="btn btn-ghost btn-block" id="btnLoadProject">استرجاع مشروع</button>
+    <button class="btn btn-ghost btn-block" id="btnBackup">نسخة احتياطية (JSON)</button>
+    <button class="btn btn-ghost btn-block" id="btnCompanySettings">إعدادات الشركة</button>
     <button class="btn btn-danger-ghost btn-block" id="btnNewProject">مشروع جديد</button>
   </div>
 </aside>
@@ -52,6 +60,7 @@
   <header class="topbar">
     <h1 id="pageTitle">معلومات المشروع</h1>
     <div class="topbar-actions">
+      <span id="dbBadge" class="badge">قاعدة البيانات: ...</span>
       <span id="currencyBadge" class="badge">العملة: ر.س</span>
     </div>
   </header>
@@ -66,8 +75,12 @@
           <input type="text" id="projectName" placeholder="مثال: مبنى إداري - نظام إنذار حريق">
         </div>
         <div class="field">
-          <label>اسم العميل</label>
+          <label>اسم العميل (يدوي)</label>
           <input type="text" id="projectClient" placeholder="اسم العميل / الشركة">
+        </div>
+        <div class="field">
+          <label>العميل من السجل <span class="opt">الأفضل</span></label>
+          <select id="projectClientSelect"></select>
         </div>
         <div class="field">
           <label>الموقع</label>
@@ -98,6 +111,19 @@
           <input type="number" id="projectValidity" value="30" min="1">
         </div>
         <div class="field">
+          <label>رقم العرض <span class="opt">يُولَّد تلقائياً عند أول حفظ</span></label>
+          <input type="text" id="projectQuoteNo" readonly placeholder="Q-2026-0001">
+        </div>
+        <div class="field">
+          <label>حالة المشروع</label>
+          <select id="projectStatus">
+            <option value="draft">مسودة</option>
+            <option value="sent">مرسل</option>
+            <option value="accepted">معتمد</option>
+            <option value="lost">ملغي</option>
+          </select>
+        </div>
+        <div class="field">
           <label>مساحة المبنى التقريبية (م²) <span class="opt">اختياري</span></label>
           <input type="number" id="projectArea" placeholder="لمقارنة سعر المتر">
         </div>
@@ -117,7 +143,7 @@
   <section class="tab-panel" id="tab-equipment">
     <div class="card">
       <h2>الأجهزة والمعدات الموردة</h2>
-      <p class="hint">أضف الأجهزة من المكتبة الجاهزة أو أضف جهازاً مخصصاً. سعر التركيب يُحسب تلقائياً من المعدل لكل جهاز ويمكن تعديله.</p>
+      <p class="hint">أضف الأجهزة من المكتبة (مخزنة في قاعدة البيانات) أو أضف جهازاً مخصصاً. سعر التركيب يُحسب تلقائياً من المعدل لكل جهاز ويمكن تعديله.</p>
       <div class="toolbar">
         <select id="eqCategoryFilter">
           <option value="all">كل الفئات</option>
@@ -184,9 +210,10 @@
   <section class="tab-panel" id="tab-materials">
     <div class="card">
       <h2>المواد والمستهلكات</h2>
-      <p class="hint">كابلات، مواسير، حوامل، مهمات تثبيت، دهانات، ومواد استهلاكية.</p>
+      <p class="hint">كابلات، مواسير، حوامل، مهمات تثبيت، دهانات، ومواد استهلاكية — أضفها من مكتبة المواد الجاهزة.</p>
       <div class="toolbar">
         <button class="btn btn-primary" id="btnAddMaterial">+ إضافة مادة</button>
+        <button class="btn btn-secondary" id="btnAddMaterialFromLibrary">أضف من مكتبة المواد</button>
       </div>
       <div class="table-wrap">
         <table class="table" id="materialTable">
@@ -270,6 +297,7 @@
       <h2>عرض السعر النهائي</h2>
       <div class="quote-actions">
         <button class="btn btn-primary" id="btnPrint">طباعة / حفظ PDF</button>
+        <button class="btn btn-secondary" id="btnExportExcel">تصدير Excel</button>
         <button class="btn btn-secondary" id="btnCopySummary">نسخ الملخص</button>
       </div>
       <div id="quotePreview"></div>
@@ -279,9 +307,79 @@
       <div id="analysisPanel"></div>
     </div>
   </section>
+
+  <!-- ====== TAB: CATALOG ====== -->
+  <section class="tab-panel" id="tab-catalog">
+    <div class="card">
+      <h2>الكتالوج والمكتبة المرجعية</h2>
+      <p class="hint">إدارة الأصناف والأسعار (أجهزة + مواد) — أي تعديل هنا ينعكس على المكتبة في جميع المشاريع، مع سجل كامل لتغيرات الأسعار.</p>
+      <div class="toolbar">
+        <select id="catKind">
+          <option value="all">كل الأنواع</option>
+          <option value="equipment">أجهزة</option>
+          <option value="material">مواد</option>
+        </select>
+        <select id="catSystem">
+          <option value="all">كل الأنظمة</option>
+          <option value="alarm">إنذار</option>
+          <option value="fighting">إطفاء</option>
+        </select>
+        <select id="catCategory"></select>
+        <input type="text" id="catSearch" placeholder="بحث بالاسم / الكود / الماركة...">
+        <button class="btn btn-primary" id="btnAddCatalogItem">+ إضافة صنف</button>
+        <button class="btn btn-secondary" id="btnBulkUpdate">تحديث أسعار شامل</button>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="catTable">
+          <thead>
+            <tr>
+              <th>الكود</th>
+              <th>الصنف</th>
+              <th>الفئة</th>
+              <th>الوحدة</th>
+              <th>التوريد</th>
+              <th>التركيب</th>
+              <th>الحالة</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="catBody"></tbody>
+        </table>
+        <div class="table-total" id="catCount"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== TAB: CLIENTS ====== -->
+  <section class="tab-panel" id="tab-clients">
+    <div class="card">
+      <h2>العملاء</h2>
+      <p class="hint">سجل العملاء — يُختار العميل من قائمة منسدلة في تبويب معلومات المشروع ويظهر اسمه في عرض السعر.</p>
+      <div class="toolbar">
+        <input type="text" id="clientSearch" placeholder="بحث بالاسم / الجوال / المدينة...">
+        <button class="btn btn-primary" id="btnAddClient">+ إضافة عميل</button>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="clientTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>الاسم</th>
+              <th>الجوال</th>
+              <th>المدينة</th>
+              <th>السجل التجاري</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="clientBody"></tbody>
+        </table>
+        <div class="table-total" id="clientCount"></div>
+      </div>
+    </div>
+  </section>
 </main>
 
-<!-- Modal: library -->
+<!-- Modal: مكتبة الأجهزة -->
 <div class="modal-overlay" id="libraryModal">
   <div class="modal">
     <div class="modal-head">
@@ -301,7 +399,24 @@
   </div>
 </div>
 
-<!-- Modal: saved projects -->
+<!-- Modal: مكتبة المواد -->
+<div class="modal-overlay" id="materialsLibModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>مكتبة المواد <span id="matLibCount" class="badge" style="margin-right:8px"></span></h3>
+      <button class="modal-close" id="materialsLibClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="toolbar">
+        <select id="matLibCategory"><option value="all">كل الفئات</option></select>
+        <input type="text" id="matLibSearch" placeholder="بحث...">
+      </div>
+      <div id="matLibList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: المشاريع المحفوظة -->
 <div class="modal-overlay" id="projectsModal">
   <div class="modal">
     <div class="modal-head">
@@ -309,7 +424,229 @@
       <button class="modal-close" id="projectsClose">&times;</button>
     </div>
     <div class="modal-body">
+      <div class="toolbar">
+        <input type="text" id="projectsSearch" placeholder="بحث بالاسم / الرقم / العميل...">
+        <button class="btn btn-secondary" id="btnImportLegacy">استيراد المشاريع القديمة</button>
+      </div>
       <div id="projectsList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: محرر الصنف -->
+<div class="modal-overlay" id="itemModal">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <h3 id="itemModalTitle">إضافة صنف</h3>
+      <button class="modal-close" id="itemClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="grid-2">
+        <div class="field">
+          <label>اسم الصنف *</label>
+          <input type="text" id="itName" placeholder="مثال: كاشف دخان معنون">
+        </div>
+        <div class="field">
+          <label>الاسم الإنجليزي</label>
+          <input type="text" id="itNameEn" placeholder="Addressable Smoke Detector">
+        </div>
+        <div class="field">
+          <label>الكود <span class="opt">يُولَّد تلقائياً</span></label>
+          <input type="text" id="itCode" placeholder="ALM-001">
+        </div>
+        <div class="field">
+          <label>الفئة</label>
+          <select id="itCategory"></select>
+        </div>
+        <div class="field">
+          <label>الوحدة</label>
+          <input type="text" id="itUnit" value="وحدة" placeholder="حبة / م / لفة / طقم">
+        </div>
+        <div class="field">
+          <label>الماركة</label>
+          <input type="text" id="itBrand" placeholder="Honeywell / Tyco / Notifier">
+        </div>
+        <div class="field">
+          <label>الموديل</label>
+          <input type="text" id="itModel">
+        </div>
+        <div class="field">
+          <label>المورد</label>
+          <input type="text" id="itSupplier">
+        </div>
+        <div class="field">
+          <label>تكلفة التوريد</label>
+          <input type="number" id="itSupply" value="0" min="0">
+        </div>
+        <div class="field">
+          <label>تكلفة التركيب المرجعية</label>
+          <input type="number" id="itInstall" value="0" min="0">
+        </div>
+      </div>
+      <div class="field">
+        <label>ملاحظات</label>
+        <input type="text" id="itNotes">
+      </div>
+      <label class="check-row"><input type="checkbox" id="itActive" checked> الصنف نشط (يظهر في المكتبة)</label>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="itemSave">حفظ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: سجل الأسعار -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="historyTitle">سجل الأسعار</h3>
+      <button class="modal-close" id="historyClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="historyBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: تحديث أسعار شامل -->
+<div class="modal-overlay" id="bulkModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>تحديث أسعار شامل</h3>
+      <button class="modal-close" id="bulkClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="hint">تُحدَّث أسعار مجموعة كاملة بنسبة واحدة (يمكن أن تكون سالبة للخصم)، ويُسجل كل تغيير في سجل الأسعار.</p>
+      <div class="grid-2">
+        <div class="field">
+          <label>النوع</label>
+          <select id="bulkKind">
+            <option value="all">الكل</option>
+            <option value="equipment">أجهزة</option>
+            <option value="material">مواد</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>الفئة</label>
+          <select id="bulkCategory"></select>
+        </div>
+        <div class="field">
+          <label>نسبة التحديث %</label>
+          <input type="number" id="bulkPct" step="0.5" placeholder="مثال: 10 للزيادة أو -5 للتخفيض">
+        </div>
+        <div class="field">
+          <label>تطبيق على</label>
+          <select id="bulkApplyTo">
+            <option value="both">التوريد والتركيب</option>
+            <option value="supply">التوريد فقط</option>
+            <option value="install">التركيب فقط</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column: 1 / -1;">
+          <label>سبب التحديث (يُسجل مع الأسعار)</label>
+          <input type="text" id="bulkNote" placeholder="مثال: ارتفاع أسعار السوق">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="bulkRun">تنفيذ التحديث</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: عميل -->
+<div class="modal-overlay" id="clientModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="clientModalTitle">إضافة عميل</h3>
+      <button class="modal-close" id="clientClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="grid-2">
+        <div class="field">
+          <label>اسم العميل *</label>
+          <input type="text" id="cmName">
+        </div>
+        <div class="field">
+          <label>الجوال</label>
+          <input type="text" id="cmPhone">
+        </div>
+        <div class="field">
+          <label>البريد الإلكتروني</label>
+          <input type="text" id="cmEmail">
+        </div>
+        <div class="field">
+          <label>السجل التجاري</label>
+          <input type="text" id="cmCr">
+        </div>
+        <div class="field">
+          <label>المدينة</label>
+          <input type="text" id="cmCity">
+        </div>
+        <div class="field">
+          <label>ملاحظات</label>
+          <input type="text" id="cmNotes">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="cmSave">حفظ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: إعدادات الشركة -->
+<div class="modal-overlay" id="companyModal">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <h3>إعدادات الشركة</h3>
+      <button class="modal-close" id="companyClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="hint">تظهر هذه البيانات في رأس عرض السعر وفي الشروط العامة — ويمكنك تغييرها في أي وقت.</p>
+      <div class="grid-2">
+        <div class="field">
+          <label>اسم الشركة *</label>
+          <input type="text" id="cmName" placeholder="اسم شركتك">
+        </div>
+        <div class="field">
+          <label>الشعار النصي (Slogan)</label>
+          <input type="text" id="cmSlogan" placeholder="توريد وتركيب وصيانة أنظمة الإطفاء والإنذار">
+        </div>
+        <div class="field">
+          <label>الجوال</label>
+          <input type="text" id="cmPhone" placeholder="05xxxxxxxx">
+        </div>
+        <div class="field">
+          <label>البريد الإلكتروني</label>
+          <input type="text" id="cmEmail" placeholder="info@company.com">
+        </div>
+        <div class="field">
+          <label>السجل التجاري</label>
+          <input type="text" id="cmCr">
+        </div>
+        <div class="field">
+          <label>العنوان</label>
+          <input type="text" id="cmAddress" placeholder="المدينة - الحي - الشارع">
+        </div>
+      </div>
+      <div class="field">
+        <label>شعار الشركة (صورة)</label>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <img id="cmLogoPreview" alt="الشعار" style="display:none;max-height:56px;max-width:160px;border:1px solid var(--border);border-radius:8px;padding:4px;background:#fff">
+          <input type="file" id="cmLogoInput" accept="image/*" style="color:var(--muted)">
+          <button class="btn btn-secondary btn-sm" id="cmRemoveLogo" type="button">إزالة الشعار</button>
+        </div>
+        <span class="opt">يفضل صورة PNG بخلفية شفافة وبحجم أقل من 300 كيلوبايت</span>
+      </div>
+      <div class="field">
+        <label>الشروط العامة في عرض السعر</label>
+        <textarea id="cmTerms" rows="6" placeholder="شروط العرض..."></textarea>
+        <span class="opt">اكتب كل شرط في سطر منفصل. رمز %DAYS% يُستبدل تلقائياً بعدد أيام الصلاحية.</span>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="companySave">حفظ الإعدادات</button>
+      </div>
     </div>
   </div>
 </div>
@@ -317,6 +654,8 @@
 <div class="toast" id="toast"></div>
 
 <script src="js/data.js"></script>
+<script src="js/calc.js"></script>
+<script src="js/api.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

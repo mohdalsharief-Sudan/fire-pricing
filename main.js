@@ -1,6 +1,23 @@
 const { app, BrowserWindow, Menu, dialog } = require("electron");
 const path = require("path");
 
+let db = null;
+let dbReady = false;
+
+function initDatabase() {
+  try {
+    const { createDatabase } = require("./src/db/database.js");
+    const dbPath = path.join(app.getPath("userData"), "fire-pricing.db");
+    db = createDatabase(dbPath);
+    dbReady = true;
+    console.log(`[DB] قاعدة البيانات جاهزة: ${dbPath}`);
+  } catch (err) {
+    // الوضع الاحتياطي: يعمل التطبيق بالطريقة القديمة (localStorage) دون تعطل
+    dbReady = false;
+    console.error("[DB] تعذر فتح قاعدة البيانات — سيتم العمل بالوضع الاحتياطي:", err.message);
+  }
+}
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1360,
@@ -11,7 +28,8 @@ function createWindow() {
     icon: path.join(__dirname, "icons", "app.png"),
     webPreferences: {
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      preload: path.join(__dirname, "preload.js")
     }
   });
 
@@ -55,8 +73,20 @@ function buildMenu(win) {
 }
 
 app.whenReady().then(() => {
+  initDatabase();
   const win = createWindow();
   buildMenu(win);
+
+  if (dbReady) {
+    try {
+      const { registerIpc } = require("./src/ipc.js");
+      registerIpc(db);
+    } catch (err) {
+      console.error("[IPC] تعذر تسجيل المعالجات:", err.message);
+      dbReady = false;
+    }
+  }
+
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       const w = createWindow();
@@ -66,5 +96,8 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
+  if (db && typeof db.close === "function") {
+    try { db.close(); } catch (e) { /* ignore */ }
+  }
   if (process.platform !== "darwin") app.quit();
 });

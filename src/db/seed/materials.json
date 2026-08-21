@@ -1,0 +1,439 @@
+{
+  "kind": "material",
+  "categories": [
+    {
+      "name": "الكابلات والأسلاك",
+      "items": [
+        {
+          "code": "MAT-001",
+          "name": "كابل إنذار مقاوم للحريق 2×1.5مم (لفة 100م)",
+          "unit": "لفة",
+          "supply_cost": 420,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-002",
+          "name": "كابل إنذار مقاوم للحريق 4×1.5مم (لفة 100م)",
+          "unit": "لفة",
+          "supply_cost": 720,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-003",
+          "name": "كابل إنذار مقاوم للحريق 6×1.5مم (لفة 100م)",
+          "unit": "لفة",
+          "supply_cost": 1080,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-004",
+          "name": "كابل حلقة معنونة زوج مجدول (لفة 300م)",
+          "unit": "لفة",
+          "supply_cost": 1400,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-005",
+          "name": "كابل شبكة RS485 للوحات التكرارية",
+          "unit": "م",
+          "supply_cost": 6,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-006",
+          "name": "كابل كشف دخان خطي",
+          "unit": "م",
+          "supply_cost": 30,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-007",
+          "name": "كابل تغذية 2×1.5مم (لفة 100م)",
+          "unit": "لفة",
+          "supply_cost": 180,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-008",
+          "name": "كابل تغذية 3×2.5مم (لفة 100م)",
+          "unit": "لفة",
+          "supply_cost": 300,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-009",
+          "name": "كابل تغذية 3×4مم (لفة 100م)",
+          "unit": "لفة",
+          "supply_cost": 480,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-010",
+          "name": "كابل طاقة مضخات 4×10مم (لفة 100م)",
+          "unit": "لفة",
+          "supply_cost": 2400,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-011",
+          "name": "سلك تأريض أخضر/أصفر 4مم (لفة 100م)",
+          "unit": "لفة",
+          "supply_cost": 220,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-012",
+          "name": "كابل تحكم عام 8×1.5مم (لفة 100م)",
+          "unit": "لفة",
+          "supply_cost": 1500,
+          "install_cost": 0
+        }
+      ]
+    },
+    {
+      "name": "مواسير التمديدات",
+      "items": [
+        {
+          "code": "MAT-013",
+          "name": "ماسورة PVC سميكة 20مم",
+          "unit": "م",
+          "supply_cost": 5,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-014",
+          "name": "ماسورة PVC سميكة 25مم",
+          "unit": "م",
+          "supply_cost": 7,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-015",
+          "name": "ماسورة حديد مرنة (Flexible) 20مم",
+          "unit": "م",
+          "supply_cost": 12,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-016",
+          "name": "ماسورة حديد مرنة 25مم",
+          "unit": "م",
+          "supply_cost": 16,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-017",
+          "name": "ماسورة EMT مجلفن 20مم",
+          "unit": "م",
+          "supply_cost": 18,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-018",
+          "name": "ماسورة EMT مجلفن 25مم",
+          "unit": "م",
+          "supply_cost": 24,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-019",
+          "name": "قناة كابلات معدنية (Cable Tray)",
+          "unit": "م",
+          "supply_cost": 85,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-020",
+          "name": "قناة كابلات بلاستيكية 40×40",
+          "unit": "م",
+          "supply_cost": 12,
+          "install_cost": 0
+        }
+      ]
+    },
+    {
+      "name": "علب التوزيع والتركيب",
+      "items": [
+        {
+          "code": "MAT-021",
+          "name": "علبة توزيع PVC 4×4",
+          "unit": "حبة",
+          "supply_cost": 12,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-022",
+          "name": "علبة توزيع حديد 4×4",
+          "unit": "حبة",
+          "supply_cost": 28,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-023",
+          "name": "علبة سقفية للكاشف (Junction Box)",
+          "unit": "حبة",
+          "supply_cost": 10,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-024",
+          "name": "علبة توصيل حديد 6×6",
+          "unit": "حبة",
+          "supply_cost": 45,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-025",
+          "name": "صندوق نهايات (Pull Box) 8×8",
+          "unit": "حبة",
+          "supply_cost": 85,
+          "install_cost": 0
+        }
+      ]
+    },
+    {
+      "name": "حوامل ومثبتات",
+      "items": [
+        {
+          "code": "MAT-026",
+          "name": "مشبك تثبيت ماسورة PVC 20مم",
+          "unit": "حبة",
+          "supply_cost": 1.5,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-027",
+          "name": "علاقة ماسورة بسيطة قطر 1 بوصة",
+          "unit": "حبة",
+          "supply_cost": 8,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-028",
+          "name": "علاقة ماسورة بسيطة قطر 2 بوصة",
+          "unit": "حبة",
+          "supply_cost": 12,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-029",
+          "name": "علاقة ماسورة بسيطة قطر 4 بوصة",
+          "unit": "حبة",
+          "supply_cost": 28,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-030",
+          "name": "حمالة U-Bolt قطر 2 بوصة",
+          "unit": "حبة",
+          "supply_cost": 16,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-031",
+          "name": "قناة حديدية Strut Channel 41×41",
+          "unit": "م",
+          "supply_cost": 25,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-032",
+          "name": "قضيب تعليق (Threaded Rod) 10مم",
+          "unit": "م",
+          "supply_cost": 8,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-033",
+          "name": "صامولة قناة مع برغي",
+          "unit": "حبة",
+          "supply_cost": 4,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-034",
+          "name": "مسامير تثبيت خرسانة (طقم 10)",
+          "unit": "طقم",
+          "supply_cost": 12,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-035",
+          "name": "بلاطة تثبيت (Anchor Plate)",
+          "unit": "حبة",
+          "supply_cost": 15,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-036",
+          "name": "مشبك كابلات (Cable Clip) طقم 100",
+          "unit": "طقم",
+          "supply_cost": 25,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-037",
+          "name": "شريط ربط كابلات (Cable Ties) طقم 100",
+          "unit": "طقم",
+          "supply_cost": 15,
+          "install_cost": 0
+        }
+      ]
+    },
+    {
+      "name": "توصيلات كهربائية",
+      "items": [
+        {
+          "code": "MAT-038",
+          "name": "ربط كابل (Cable Gland) 20مم",
+          "unit": "حبة",
+          "supply_cost": 8,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-039",
+          "name": "ربط كابل (Cable Gland) 25مم",
+          "unit": "حبة",
+          "supply_cost": 12,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-040",
+          "name": "طرف كابل (Lug) طقم",
+          "unit": "طقم",
+          "supply_cost": 5,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-041",
+          "name": "بلوك توصيل 12 نقطة",
+          "unit": "حبة",
+          "supply_cost": 15,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-042",
+          "name": "شريط تأريض (Ground Bar)",
+          "unit": "حبة",
+          "supply_cost": 45,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-043",
+          "name": "مقاومة إنهاء حلقة (EOL Resistor) طقم",
+          "unit": "طقم",
+          "supply_cost": 3,
+          "install_cost": 0
+        }
+      ]
+    },
+    {
+      "name": "الدهانات والعوازل",
+      "items": [
+        {
+          "code": "MAT-044",
+          "name": "دهان حريق ممدد (Intumescent) 5 لتر",
+          "unit": "عبوة",
+          "supply_cost": 850,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-045",
+          "name": "دهان إيبوكسي مضاد للتآكل (جالون 4 لتر)",
+          "unit": "جالون",
+          "supply_cost": 320,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-046",
+          "name": "عازل ماسورة فوم 1 بوصة",
+          "unit": "م",
+          "supply_cost": 6,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-047",
+          "name": "أنابيب انكماش حراري (Heat Shrink) طقم",
+          "unit": "طقم",
+          "supply_cost": 35,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-048",
+          "name": "مادة سد فتحات الحريق (Fire Stop) أنبوب",
+          "unit": "أنبوب",
+          "supply_cost": 90,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-049",
+          "name": "شريط عزل كهربائي (لفة)",
+          "unit": "لفة",
+          "supply_cost": 4,
+          "install_cost": 0
+        }
+      ]
+    },
+    {
+      "name": "مواد استهلاكية واختبار",
+      "items": [
+        {
+          "code": "MAT-050",
+          "name": "علبة غاز اختبار الكواشف",
+          "unit": "علبة",
+          "supply_cost": 85,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-051",
+          "name": "أيروسول اختبار الكواشف",
+          "unit": "علبة",
+          "supply_cost": 150,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-052",
+          "name": "ملصقات فحص وتوثيق (طقم 50)",
+          "unit": "طقم",
+          "supply_cost": 40,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-053",
+          "name": "علامات تعريف لوحات (طقم)",
+          "unit": "طقم",
+          "supply_cost": 25,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-054",
+          "name": "قفازات عمل فنية (طقم)",
+          "unit": "طقم",
+          "supply_cost": 10,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-055",
+          "name": "مادة لحام + فلكس",
+          "unit": "مجموعة",
+          "supply_cost": 25,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-056",
+          "name": "بودرة طفاية تعبئة 6 كجم ABC",
+          "unit": "كيس",
+          "supply_cost": 45,
+          "install_cost": 0
+        },
+        {
+          "code": "MAT-057",
+          "name": "خرطوم توصيل مضخة مرن",
+          "unit": "حبة",
+          "supply_cost": 180,
+          "install_cost": 0
+        }
+      ]
+    }
+  ]
+}

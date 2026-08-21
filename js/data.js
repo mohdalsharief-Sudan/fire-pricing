@@ -305,6 +305,84 @@ const EQUIPMENT_LIBRARY = {
   }
 };
 
+const MATERIALS_LIBRARY = {
+  name: "المواد والمستهلكات",
+  icon: "M",
+  groups: {
+    "الكابلات والأسلاك": [
+      { name: "كابل إنذار مقاوم للحريق 2×1.5مم (لفة 100م)", unit: "لفة", supply: 420, install: 0 },
+      { name: "كابل إنذار مقاوم للحريق 4×1.5مم (لفة 100م)", unit: "لفة", supply: 720, install: 0 },
+      { name: "كابل إنذار مقاوم للحريق 6×1.5مم (لفة 100م)", unit: "لفة", supply: 1080, install: 0 },
+      { name: "كابل حلقة معنونة زوج مجدول (لفة 300م)", unit: "لفة", supply: 1400, install: 0 },
+      { name: "كابل شبكة RS485 للوحات التكرارية", unit: "م", supply: 6, install: 0 },
+      { name: "كابل كشف دخان خطي", unit: "م", supply: 30, install: 0 },
+      { name: "كابل تغذية 2×1.5مم (لفة 100م)", unit: "لفة", supply: 180, install: 0 },
+      { name: "كابل تغذية 3×2.5مم (لفة 100م)", unit: "لفة", supply: 300, install: 0 },
+      { name: "كابل تغذية 3×4مم (لفة 100م)", unit: "لفة", supply: 480, install: 0 },
+      { name: "كابل طاقة مضخات 4×10مم (لفة 100م)", unit: "لفة", supply: 2400, install: 0 },
+      { name: "سلك تأريض أخضر/أصفر 4مم (لفة 100م)", unit: "لفة", supply: 220, install: 0 },
+      { name: "كابل تحكم عام 8×1.5مم (لفة 100م)", unit: "لفة", supply: 1500, install: 0 }
+    ],
+    "مواسير التمديدات": [
+      { name: "ماسورة PVC سميكة 20مم", unit: "م", supply: 5, install: 0 },
+      { name: "ماسورة PVC سميكة 25مم", unit: "م", supply: 7, install: 0 },
+      { name: "ماسورة حديد مرنة (Flexible) 20مم", unit: "م", supply: 12, install: 0 },
+      { name: "ماسورة حديد مرنة 25مم", unit: "م", supply: 16, install: 0 },
+      { name: "ماسورة EMT مجلفن 20مم", unit: "م", supply: 18, install: 0 },
+      { name: "ماسورة EMT مجلفن 25مم", unit: "م", supply: 24, install: 0 },
+      { name: "قناة كابلات معدنية (Cable Tray)", unit: "م", supply: 85, install: 0 },
+      { name: "قناة كابلات بلاستيكية 40×40", unit: "م", supply: 12, install: 0 }
+    ],
+    "علب التوزيع والتركيب": [
+      { name: "علبة توزيع PVC 4×4", unit: "حبة", supply: 12, install: 0 },
+      { name: "علبة توزيع حديد 4×4", unit: "حبة", supply: 28, install: 0 },
+      { name: "علبة سقفية للكاشف (Junction Box)", unit: "حبة", supply: 10, install: 0 },
+      { name: "علبة توصيل حديد 6×6", unit: "حبة", supply: 45, install: 0 },
+      { name: "صندوق نهايات (Pull Box) 8×8", unit: "حبة", supply: 85, install: 0 }
+    ],
+    "حوامل ومثبتات": [
+      { name: "مشبك تثبيت ماسورة PVC 20مم", unit: "حبة", supply: 1.5, install: 0 },
+      { name: "علاقة ماسورة بسيطة قطر 1 بوصة", unit: "حبة", supply: 8, install: 0 },
+      { name: "علاقة ماسورة بسيطة قطر 2 بوصة", unit: "حبة", supply: 12, install: 0 },
+      { name: "علاقة ماسورة بسيطة قطر 4 بوصة", unit: "حبة", supply: 28, install: 0 },
+      { name: "حمالة U-Bolt قطر 2 بوصة", unit: "حبة", supply: 16, install: 0 },
+      { name: "قناة حديدية Strut Channel 41×41", unit: "م", supply: 25, install: 0 },
+      { name: "قضيب تعليق (Threaded Rod) 10مم", unit: "م", supply: 8, install: 0 },
+      { name: "صامولة قناة مع برغي", unit: "حبة", supply: 4, install: 0 },
+      { name: "مسامير تثبيت خرسانة (طقم 10)", unit: "طقم", supply: 12, install: 0 },
+      { name: "بلاطة تثبيت (Anchor Plate)", unit: "حبة", supply: 15, install: 0 },
+      { name: "مشبك كابلات (Cable Clip) طقم 100", unit: "طقم", supply: 25, install: 0 },
+      { name: "شريط ربط كابلات (Cable Ties) طقم 100", unit: "طقم", supply: 15, install: 0 }
+    ],
+    "توصيلات كهربائية": [
+      { name: "ربط كابل (Cable Gland) 20مم", unit: "حبة", supply: 8, install: 0 },
+      { name: "ربط كابل (Cable Gland) 25مم", unit: "حبة", supply: 12, install: 0 },
+      { name: "طرف كابل (Lug) طقم", unit: "طقم", supply: 5, install: 0 },
+      { name: "بلوك توصيل 12 نقطة", unit: "حبة", supply: 15, install: 0 },
+      { name: "شريط تأريض (Ground Bar)", unit: "حبة", supply: 45, install: 0 },
+      { name: "مقاومة إنهاء حلقة (EOL Resistor) طقم", unit: "طقم", supply: 3, install: 0 }
+    ],
+    "الدهانات والعوازل": [
+      { name: "دهان حريق ممدد (Intumescent) 5 لتر", unit: "عبوة", supply: 850, install: 0 },
+      { name: "دهان إيبوكسي مضاد للتآكل (جالون 4 لتر)", unit: "جالون", supply: 320, install: 0 },
+      { name: "عازل ماسورة فوم 1 بوصة", unit: "م", supply: 6, install: 0 },
+      { name: "أنابيب انكماش حراري (Heat Shrink) طقم", unit: "طقم", supply: 35, install: 0 },
+      { name: "مادة سد فتحات الحريق (Fire Stop) أنبوب", unit: "أنبوب", supply: 90, install: 0 },
+      { name: "شريط عزل كهربائي (لفة)", unit: "لفة", supply: 4, install: 0 }
+    ],
+    "مواد استهلاكية واختبار": [
+      { name: "علبة غاز اختبار الكواشف", unit: "علبة", supply: 85, install: 0 },
+      { name: "أيروسول اختبار الكواشف", unit: "علبة", supply: 150, install: 0 },
+      { name: "ملصقات فحص وتوثيق (طقم 50)", unit: "طقم", supply: 40, install: 0 },
+      { name: "علامات تعريف لوحات (طقم)", unit: "طقم", supply: 25, install: 0 },
+      { name: "قفازات عمل فنية (طقم)", unit: "طقم", supply: 10, install: 0 },
+      { name: "مادة لحام + فلكس", unit: "مجموعة", supply: 25, install: 0 },
+      { name: "بودرة طفاية تعبئة 6 كجم ABC", unit: "كيس", supply: 45, install: 0 },
+      { name: "خرطوم توصيل مضخة مرن", unit: "حبة", supply: 180, install: 0 }
+    ]
+  }
+};
+
 const LABOR_ADVICE = [
   "التكلفة الحقيقية للعامل = الراتب الشهري ÷ 26 يوم عمل، أضف عليها نسبة السكن والمواصلات والتأمين الصحي (عادة 30-40% من الراتب).",
   "أضف البدلات اليومية والمواد الاستهلاكية الخاصة بالعاملين (قفازات، ملابس عمل، أحذية أمان).",

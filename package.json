@@ -1,18 +1,62 @@
 {
   "name": "fire-pricing",
   "productName": "نظام التسعير الذكي للحماية من الحرائق",
-  "version": "1.0.0",
-  "description": "نظام تسعير ذكي لمشاريع توريد وتركيب أنظمة الإطفاء والإنذار من الحريق",
+  "version": "2.1.0",
+  "description": "نظام تسعير ذكي لمشاريع توريد وتركيب أنظمة الإطفاء والإنذار من الحريق — بقاعدة بيانات SQLite ومكتبة أجهزة ومواد كاملة",
   "main": "main.js",
-  "author": "",
+  "author": {
+    "name": "شركة مقاولات الحماية من الحرائق"
+  },
   "license": "MIT",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "test": "node --test src/",
+    "seed": "node scripts/generate-seeds.js",
+    "rebuild": "electron-rebuild -f -w better-sqlite3",
+    "dist": "electron-builder"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.11.1",
+    "exceljs": "^4.4.0"
   },
   "devDependencies": {
-    "electron": "^31.7.7"
+    "@electron/rebuild": "^3.7.2",
+    "electron": "^31.7.7",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.firepricing.app",
+    "productName": "نظام التسعير الذكي للحماية من الحرائق",
+    "files": [
+      "index.html",
+      "main.js",
+      "preload.js",
+      "js/**/*",
+      "src/**/*",
+      "css/**/*",
+      "icons/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icons/app.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "icons/app.png"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "icons/app.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "language": "2055"
+    }
   },
   "allowScripts": {
-    "electron@31.7.7": true
+    "electron@31.7.7": true,
+    "better-sqlite3@12.11.1": true
   }
 }

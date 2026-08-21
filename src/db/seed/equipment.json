@@ -1,0 +1,1890 @@
+{
+  "kind": "equipment",
+  "categories": [
+    {
+      "name": "لوحات التحكم",
+      "items": [
+        {
+          "code": "ALM-001",
+          "name": "لوحة تحكم إنذار حريق تقليدية 2 منطقة",
+          "unit": "وحدة",
+          "supply_cost": 850,
+          "install_cost": 600
+        },
+        {
+          "code": "ALM-002",
+          "name": "لوحة تحكم إنذار حريق تقليدية 4 مناطق",
+          "unit": "وحدة",
+          "supply_cost": 1400,
+          "install_cost": 700
+        },
+        {
+          "code": "ALM-003",
+          "name": "لوحة تحكم إنذار حريق تقليدية 8 مناطق",
+          "unit": "وحدة",
+          "supply_cost": 2200,
+          "install_cost": 900
+        },
+        {
+          "code": "ALM-004",
+          "name": "لوحة تحكم إنذار حريق تقليدية 16 منطقة",
+          "unit": "وحدة",
+          "supply_cost": 3600,
+          "install_cost": 1200
+        },
+        {
+          "code": "ALM-005",
+          "name": "لوحة تحكم إنذار حريق تقليدية 32 منطقة",
+          "unit": "وحدة",
+          "supply_cost": 6200,
+          "install_cost": 1500
+        },
+        {
+          "code": "ALM-006",
+          "name": "لوحة تكرارية تقليدية (Repeater) 8 مناطق",
+          "unit": "وحدة",
+          "supply_cost": 2500,
+          "install_cost": 700
+        },
+        {
+          "code": "ALM-007",
+          "name": "لوحة تحكم إنذار حريق معنونة (Addressable) حلقة واحدة",
+          "unit": "وحدة",
+          "supply_cost": 6800,
+          "install_cost": 1800
+        },
+        {
+          "code": "ALM-008",
+          "name": "لوحة تحكم إنذار حريق معنونة حلقتان",
+          "unit": "وحدة",
+          "supply_cost": 12500,
+          "install_cost": 2200
+        },
+        {
+          "code": "ALM-009",
+          "name": "لوحة تحكم معنونة 4 حلقات",
+          "unit": "وحدة",
+          "supply_cost": 21000,
+          "install_cost": 2800
+        },
+        {
+          "code": "ALM-010",
+          "name": "لوحة تكرارية معنونة (Repeater Panel)",
+          "unit": "وحدة",
+          "supply_cost": 4500,
+          "install_cost": 900
+        },
+        {
+          "code": "ALM-011",
+          "name": "وحدة توسعة مناطق إضافية (Zone Expander)",
+          "unit": "وحدة",
+          "supply_cost": 800,
+          "install_cost": 200
+        },
+        {
+          "code": "ALM-012",
+          "name": "وحدة حلقة إضافية (Loop Card)",
+          "unit": "وحدة",
+          "supply_cost": 2200,
+          "install_cost": 350
+        },
+        {
+          "code": "ALM-013",
+          "name": "جهاز عرض مناطق منفصل (ANN/Zone Annunciator)",
+          "unit": "وحدة",
+          "supply_cost": 420,
+          "install_cost": 120
+        },
+        {
+          "code": "ALM-014",
+          "name": "بطارية احتياطية للوحة 12 فولت 7 أمبير",
+          "unit": "وحدة",
+          "supply_cost": 150,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-015",
+          "name": "بطارية احتياطية 12 فولت 17 أمبير",
+          "unit": "وحدة",
+          "supply_cost": 280,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-016",
+          "name": "بطارية احتياطية 12 فولت 40 أمبير",
+          "unit": "وحدة",
+          "supply_cost": 620,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-017",
+          "name": "شاحن بطاريات مستقل 24 فولت",
+          "unit": "وحدة",
+          "supply_cost": 950,
+          "install_cost": 250
+        },
+        {
+          "code": "ALM-018",
+          "name": "خزانة لوحة إنذار خارجية مقاومة للعوامل",
+          "unit": "وحدة",
+          "supply_cost": 1800,
+          "install_cost": 300
+        }
+      ],
+      "system": "alarm"
+    },
+    {
+      "name": "الكواشف التقليدية",
+      "items": [
+        {
+          "code": "ALM-019",
+          "name": "كاشف دخان تقليدي (Smoke Detector)",
+          "unit": "وحدة",
+          "supply_cost": 120,
+          "install_cost": 55
+        },
+        {
+          "code": "ALM-020",
+          "name": "كاشف حرارة تقليدي (Heat Detector)",
+          "unit": "وحدة",
+          "supply_cost": 95,
+          "install_cost": 55
+        },
+        {
+          "code": "ALM-021",
+          "name": "كاشف حرارة ثابتة ومعدل الارتفاع (ROR)",
+          "unit": "وحدة",
+          "supply_cost": 110,
+          "install_cost": 55
+        },
+        {
+          "code": "ALM-022",
+          "name": "كاشف دخان خطي (Beam Detector) - زوج كامل",
+          "unit": "وحدة",
+          "supply_cost": 4200,
+          "install_cost": 600
+        },
+        {
+          "code": "ALM-023",
+          "name": "كاشف لهب تقليدي (Flame Detector)",
+          "unit": "وحدة",
+          "supply_cost": 4800,
+          "install_cost": 700
+        },
+        {
+          "code": "ALM-024",
+          "name": "كاشف غاز أول أكسيد الكربون تقليدي",
+          "unit": "وحدة",
+          "supply_cost": 850,
+          "install_cost": 120
+        },
+        {
+          "code": "ALM-025",
+          "name": "كاشف دخان بقنوات التكييف (Duct Detector)",
+          "unit": "وحدة",
+          "supply_cost": 1500,
+          "install_cost": 350
+        },
+        {
+          "code": "ALM-026",
+          "name": "كاشف دخان مدمج مع قاعدة عزل",
+          "unit": "وحدة",
+          "supply_cost": 180,
+          "install_cost": 60
+        }
+      ],
+      "system": "alarm"
+    },
+    {
+      "name": "الكواشف المعنونة",
+      "items": [
+        {
+          "code": "ALM-027",
+          "name": "كاشف دخان معنون (Addressable Smoke Detector)",
+          "unit": "وحدة",
+          "supply_cost": 320,
+          "install_cost": 65
+        },
+        {
+          "code": "ALM-028",
+          "name": "كاشف حرارة معنون (Addressable Heat Detector)",
+          "unit": "وحدة",
+          "supply_cost": 290,
+          "install_cost": 65
+        },
+        {
+          "code": "ALM-029",
+          "name": "كاشف دخان معنون متعدد الحساسية (Multi-criteria)",
+          "unit": "وحدة",
+          "supply_cost": 520,
+          "install_cost": 70
+        },
+        {
+          "code": "ALM-030",
+          "name": "كاشف حرارة معنون ROR",
+          "unit": "وحدة",
+          "supply_cost": 310,
+          "install_cost": 65
+        },
+        {
+          "code": "ALM-031",
+          "name": "كاشف لهب معنون (Addressable Flame)",
+          "unit": "وحدة",
+          "supply_cost": 8500,
+          "install_cost": 900
+        },
+        {
+          "code": "ALM-032",
+          "name": "كاشف دخان خطي معنون",
+          "unit": "وحدة",
+          "supply_cost": 5600,
+          "install_cost": 700
+        },
+        {
+          "code": "ALM-033",
+          "name": "كاشف دخان معنون للقنوات (Addressable Duct)",
+          "unit": "وحدة",
+          "supply_cost": 1900,
+          "install_cost": 380
+        },
+        {
+          "code": "ALM-034",
+          "name": "كاشف غاز معنون",
+          "unit": "وحدة",
+          "supply_cost": 1200,
+          "install_cost": 150
+        }
+      ],
+      "system": "alarm"
+    },
+    {
+      "name": "نقاط الاستدعاء اليدوية",
+      "items": [
+        {
+          "code": "ALM-035",
+          "name": "نقطة استدعاء يدوية تقليدية (Manual Call Point)",
+          "unit": "وحدة",
+          "supply_cost": 85,
+          "install_cost": 45
+        },
+        {
+          "code": "ALM-036",
+          "name": "نقطة استدعاء يدوية معنونة (Addressable MCP)",
+          "unit": "وحدة",
+          "supply_cost": 230,
+          "install_cost": 50
+        },
+        {
+          "code": "ALM-037",
+          "name": "نقطة استدعاء يدوية مقاومة للماء IP67",
+          "unit": "وحدة",
+          "supply_cost": 160,
+          "install_cost": 55
+        },
+        {
+          "code": "ALM-038",
+          "name": "نقطة استدعاء بلمسة زجاجية للأسطح الخطرة",
+          "unit": "وحدة",
+          "supply_cost": 190,
+          "install_cost": 50
+        },
+        {
+          "code": "ALM-039",
+          "name": "مفتاح اختبار يدوي للنقاط",
+          "unit": "وحدة",
+          "supply_cost": 45,
+          "install_cost": 25
+        }
+      ],
+      "system": "alarm"
+    },
+    {
+      "name": "أجهزة التنبيه والإعلان",
+      "items": [
+        {
+          "code": "ALM-040",
+          "name": "جرس إنذار داخلي 6 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 75,
+          "install_cost": 40
+        },
+        {
+          "code": "ALM-041",
+          "name": "جرس إنذار خارجي مقاوم للماء",
+          "unit": "وحدة",
+          "supply_cost": 140,
+          "install_cost": 50
+        },
+        {
+          "code": "ALM-042",
+          "name": "صفارة إنذار (Horn/Sounder)",
+          "unit": "وحدة",
+          "supply_cost": 130,
+          "install_cost": 45
+        },
+        {
+          "code": "ALM-043",
+          "name": "لمبة وميض (Strobe Light)",
+          "unit": "وحدة",
+          "supply_cost": 110,
+          "install_cost": 45
+        },
+        {
+          "code": "ALM-044",
+          "name": "وحدة صوت وضوء (Sounder + Strobe)",
+          "unit": "وحدة",
+          "supply_cost": 240,
+          "install_cost": 55
+        },
+        {
+          "code": "ALM-045",
+          "name": "صفارة جدارية معنونة (Addressable Sounder)",
+          "unit": "وحدة",
+          "supply_cost": 330,
+          "install_cost": 55
+        },
+        {
+          "code": "ALM-046",
+          "name": "وحدة صوت/ضوء معنونة",
+          "unit": "وحدة",
+          "supply_cost": 420,
+          "install_cost": 60
+        },
+        {
+          "code": "ALM-047",
+          "name": "جرس إنذار بجهد منخفض لذوي الاحتياجات (VAD)",
+          "unit": "وحدة",
+          "supply_cost": 350,
+          "install_cost": 55
+        },
+        {
+          "code": "ALM-048",
+          "name": "صافرة إنذار مائية (Water Motor Gong)",
+          "unit": "وحدة",
+          "supply_cost": 500,
+          "install_cost": 120
+        }
+      ],
+      "system": "alarm"
+    },
+    {
+      "name": "الوحدات والملحقات المعنونة",
+      "items": [
+        {
+          "code": "ALM-049",
+          "name": "وحدة مراقبة معنونة (Monitor Module)",
+          "unit": "وحدة",
+          "supply_cost": 260,
+          "install_cost": 55
+        },
+        {
+          "code": "ALM-050",
+          "name": "وحدة تحكم معنونة (Control Module)",
+          "unit": "وحدة",
+          "supply_cost": 280,
+          "install_cost": 60
+        },
+        {
+          "code": "ALM-051",
+          "name": "وحدة مراقبة/تحكم مدمجة (Combined Module)",
+          "unit": "وحدة",
+          "supply_cost": 300,
+          "install_cost": 60
+        },
+        {
+          "code": "ALM-052",
+          "name": "وحدة عزل حلقة (Isolator Module)",
+          "unit": "وحدة",
+          "supply_cost": 200,
+          "install_cost": 40
+        },
+        {
+          "code": "ALM-053",
+          "name": "وحدة مرحلات 2 قناة (2-Relay Module)",
+          "unit": "وحدة",
+          "supply_cost": 380,
+          "install_cost": 70
+        },
+        {
+          "code": "ALM-054",
+          "name": "وحدة مراقبة تدفق مائي (Flow Switch Module)",
+          "unit": "وحدة",
+          "supply_cost": 240,
+          "install_cost": 60
+        },
+        {
+          "code": "ALM-055",
+          "name": "وحدة مراقبة ضغط (Pressure Switch Module)",
+          "unit": "وحدة",
+          "supply_cost": 240,
+          "install_cost": 60
+        },
+        {
+          "code": "ALM-056",
+          "name": "وحدة إدخال/إخراج عامة (I/O Module)",
+          "unit": "وحدة",
+          "supply_cost": 320,
+          "install_cost": 60
+        },
+        {
+          "code": "ALM-057",
+          "name": "صندوق تركيب وحدة (Module Enclosure)",
+          "unit": "وحدة",
+          "supply_cost": 45,
+          "install_cost": 25
+        },
+        {
+          "code": "ALM-058",
+          "name": "محول طاقة مستقل 24 فولت للوحدات",
+          "unit": "وحدة",
+          "supply_cost": 400,
+          "install_cost": 120
+        }
+      ],
+      "system": "alarm"
+    },
+    {
+      "name": "قواعد الكواشف والملحقات",
+      "items": [
+        {
+          "code": "ALM-059",
+          "name": "قاعدة كاشف قياسية (Detector Base)",
+          "unit": "وحدة",
+          "supply_cost": 25,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-060",
+          "name": "قاعدة كاشف مع مقاومة عزل (Relay Base)",
+          "unit": "وحدة",
+          "supply_cost": 60,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-061",
+          "name": "قاعدة كاشف معنونة مع عزل",
+          "unit": "وحدة",
+          "supply_cost": 90,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-062",
+          "name": "مركب كاشف في السقف (Detector Recess/Trim)",
+          "unit": "وحدة",
+          "supply_cost": 35,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-063",
+          "name": "غطاء واقي للكاشف أثناء العمل",
+          "unit": "وحدة",
+          "supply_cost": 15,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-064",
+          "name": "مفتاح مفتاح مقص (Key Switch) لإعادة التعيين",
+          "unit": "وحدة",
+          "supply_cost": 60,
+          "install_cost": 30
+        },
+        {
+          "code": "ALM-065",
+          "name": "لوحة سحب رئيسية بالموقع (Panel Key Switch)",
+          "unit": "وحدة",
+          "supply_cost": 80,
+          "install_cost": 40
+        },
+        {
+          "code": "ALM-066",
+          "name": "عاكس الحماية من الرطوبة (Weather-proof Backbox)",
+          "unit": "وحدة",
+          "supply_cost": 70,
+          "install_cost": 30
+        }
+      ],
+      "system": "alarm"
+    },
+    {
+      "name": "الكابلات والتمديدات",
+      "items": [
+        {
+          "code": "ALM-067",
+          "name": "كابل مقاوم للحريق 2 نواة (لفة 100م)",
+          "unit": "وحدة",
+          "supply_cost": 420,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-068",
+          "name": "كابل مقاوم للحريق 4 نواة (لفة 100م)",
+          "unit": "وحدة",
+          "supply_cost": 720,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-069",
+          "name": "كابل مقاوم للحريق 6 نواة (لفة 100م)",
+          "unit": "وحدة",
+          "supply_cost": 1080,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-070",
+          "name": "كابل حلقة معنونة زوج مجدول (لفة 300م)",
+          "unit": "وحدة",
+          "supply_cost": 1400,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-071",
+          "name": "كابل مقاوم للحريق 8 نواة (لفة 100م)",
+          "unit": "وحدة",
+          "supply_cost": 1500,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-072",
+          "name": "كابل شبكة RS485 للوحات التكرارية (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 6,
+          "install_cost": 3
+        },
+        {
+          "code": "ALM-073",
+          "name": "كابل كشف دخان خطي (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 30,
+          "install_cost": 5
+        },
+        {
+          "code": "ALM-074",
+          "name": "كابل تغذية 2×1.5مم (لفة 100م)",
+          "unit": "وحدة",
+          "supply_cost": 180,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-075",
+          "name": "كابل تغذية 3×2.5مم (لفة 100م)",
+          "unit": "وحدة",
+          "supply_cost": 300,
+          "install_cost": 0
+        }
+      ],
+      "system": "alarm"
+    },
+    {
+      "name": "مواسير التمديدات وعلب التوزيع",
+      "items": [
+        {
+          "code": "ALM-076",
+          "name": "ماسورة PVC سميكة 20مم (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 5,
+          "install_cost": 4
+        },
+        {
+          "code": "ALM-077",
+          "name": "ماسورة PVC سميكة 25مم (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 7,
+          "install_cost": 4
+        },
+        {
+          "code": "ALM-078",
+          "name": "ماسورة حديد مرنة (Flexible Conduit) 20مم (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 12,
+          "install_cost": 6
+        },
+        {
+          "code": "ALM-079",
+          "name": "ماسورة حديد مرنة 25مم (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 16,
+          "install_cost": 7
+        },
+        {
+          "code": "ALM-080",
+          "name": "ماسورة حديد مجلفن EMT 20مم (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 18,
+          "install_cost": 8
+        },
+        {
+          "code": "ALM-081",
+          "name": "علبة توزيع PVC 4×4",
+          "unit": "وحدة",
+          "supply_cost": 12,
+          "install_cost": 10
+        },
+        {
+          "code": "ALM-082",
+          "name": "علبة توزيع حديد 4×4",
+          "unit": "وحدة",
+          "supply_cost": 28,
+          "install_cost": 12
+        },
+        {
+          "code": "ALM-083",
+          "name": "علبة سقفية للكاشف (Junction Box)",
+          "unit": "وحدة",
+          "supply_cost": 10,
+          "install_cost": 8
+        },
+        {
+          "code": "ALM-084",
+          "name": "كوع/مشبك PVC 20مم",
+          "unit": "وحدة",
+          "supply_cost": 2,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-085",
+          "name": "مشبك تثبيت ماسورة (Pipe Clip)",
+          "unit": "وحدة",
+          "supply_cost": 1.5,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-086",
+          "name": "قناة كابلات (Cable Tray) معدنية (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 85,
+          "install_cost": 35
+        }
+      ],
+      "system": "alarm"
+    },
+    {
+      "name": "أجهزة الاختبار والقياس",
+      "items": [
+        {
+          "code": "ALM-087",
+          "name": "أداة اختبار الكواشف (Test Tool - أيروسول)",
+          "unit": "وحدة",
+          "supply_cost": 150,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-088",
+          "name": "علبة غاز اختبار الكواشف",
+          "unit": "وحدة",
+          "supply_cost": 85,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-089",
+          "name": "مقياس مقاومة العزل (Insulation Tester)",
+          "unit": "وحدة",
+          "supply_cost": 900,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-090",
+          "name": "جهاز برمجة الكواشف المعنونة (Programmer)",
+          "unit": "وحدة",
+          "supply_cost": 650,
+          "install_cost": 0
+        },
+        {
+          "code": "ALM-091",
+          "name": "مولد صوت لاختبار صفارات الانذار",
+          "unit": "وحدة",
+          "supply_cost": 250,
+          "install_cost": 0
+        }
+      ],
+      "system": "alarm"
+    },
+    {
+      "name": "الإطفاء اليدوي (طفايات وخزائن)",
+      "items": [
+        {
+          "code": "FGT-001",
+          "name": "طفاية بودرة جافة 6 كجم ABC",
+          "unit": "وحدة",
+          "supply_cost": 85,
+          "install_cost": 15
+        },
+        {
+          "code": "FGT-002",
+          "name": "طفاية بودرة جافة 9 كجم ABC",
+          "unit": "وحدة",
+          "supply_cost": 120,
+          "install_cost": 15
+        },
+        {
+          "code": "FGT-003",
+          "name": "طفاية بودرة جافة 12 كجم ABC",
+          "unit": "وحدة",
+          "supply_cost": 165,
+          "install_cost": 20
+        },
+        {
+          "code": "FGT-004",
+          "name": "طفاية بودرة جافة 25 كجم ABC (عجلات)",
+          "unit": "وحدة",
+          "supply_cost": 850,
+          "install_cost": 40
+        },
+        {
+          "code": "FGT-005",
+          "name": "طفاية CO2 ثاني أكسيد الكربون 5 كجم",
+          "unit": "وحدة",
+          "supply_cost": 320,
+          "install_cost": 20
+        },
+        {
+          "code": "FGT-006",
+          "name": "طفاية CO2 9 كجم",
+          "unit": "وحدة",
+          "supply_cost": 520,
+          "install_cost": 25
+        },
+        {
+          "code": "FGT-007",
+          "name": "طفاية مياه 9 لتر",
+          "unit": "وحدة",
+          "supply_cost": 180,
+          "install_cost": 15
+        },
+        {
+          "code": "FGT-008",
+          "name": "طفاية رغوة 9 لتر",
+          "unit": "وحدة",
+          "supply_cost": 240,
+          "install_cost": 15
+        },
+        {
+          "code": "FGT-009",
+          "name": "طفاية كيميائية سائلة (Wet Chemical) للزيوت 6 لتر",
+          "unit": "وحدة",
+          "supply_cost": 420,
+          "install_cost": 20
+        },
+        {
+          "code": "FGT-010",
+          "name": "طفاية سلسلة الإطفاء بالبطاريات الليثيوم",
+          "unit": "وحدة",
+          "supply_cost": 780,
+          "install_cost": 20
+        },
+        {
+          "code": "FGT-011",
+          "name": "خزانة طفاية حائط (Cabinet) زجاج أمامي",
+          "unit": "وحدة",
+          "supply_cost": 120,
+          "install_cost": 40
+        },
+        {
+          "code": "FGT-012",
+          "name": "خزانة طفاية حائط معدنية بالكامل",
+          "unit": "وحدة",
+          "supply_cost": 180,
+          "install_cost": 50
+        },
+        {
+          "code": "FGT-013",
+          "name": "طقم طفاية كامل مع خزانة وحامل",
+          "unit": "وحدة",
+          "supply_cost": 250,
+          "install_cost": 60
+        },
+        {
+          "code": "FGT-014",
+          "name": "حامل أرضي للطفاية",
+          "unit": "وحدة",
+          "supply_cost": 45,
+          "install_cost": 20
+        },
+        {
+          "code": "FGT-015",
+          "name": "علامة دلالية + ملصق تعليمات",
+          "unit": "وحدة",
+          "supply_cost": 60,
+          "install_cost": 20
+        },
+        {
+          "code": "FGT-016",
+          "name": "مشبك تثبيت طفاية في المركبات/المعدات",
+          "unit": "وحدة",
+          "supply_cost": 35,
+          "install_cost": 15
+        }
+      ],
+      "system": "fighting"
+    },
+    {
+      "name": "شبكة المواسير (أنابيب الحريق)",
+      "items": [
+        {
+          "code": "FGT-017",
+          "name": "ماسورة حديد مجلفن (GI) قطر 1 بوصة (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 38,
+          "install_cost": 12
+        },
+        {
+          "code": "FGT-018",
+          "name": "ماسورة حديد مجلفن (GI) قطر 1.25 بوصة (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 48,
+          "install_cost": 13
+        },
+        {
+          "code": "FGT-019",
+          "name": "ماسورة حديد مجلفن (GI) قطر 1.5 بوصة (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 60,
+          "install_cost": 14
+        },
+        {
+          "code": "FGT-020",
+          "name": "ماسورة حديد مجلفن (GI) قطر 2 بوصة (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 78,
+          "install_cost": 16
+        },
+        {
+          "code": "FGT-021",
+          "name": "ماسورة حديد مجلفن (GI) قطر 2.5 بوصة (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 105,
+          "install_cost": 18
+        },
+        {
+          "code": "FGT-022",
+          "name": "ماسورة حديد مجلفن (GI) قطر 3 بوصة (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 135,
+          "install_cost": 20
+        },
+        {
+          "code": "FGT-023",
+          "name": "ماسورة حديد مجلفن (GI) قطر 4 بوصة (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 185,
+          "install_cost": 24
+        },
+        {
+          "code": "FGT-024",
+          "name": "ماسورة حديد مجلفن (GI) قطر 6 بوصة (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 330,
+          "install_cost": 32
+        },
+        {
+          "code": "FGT-025",
+          "name": "ماسورة حديد أسود ملحومة (Black Steel) 2 بوصة (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 72,
+          "install_cost": 16
+        },
+        {
+          "code": "FGT-026",
+          "name": "ماسورة حديد أسود 3 بوصة (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 125,
+          "install_cost": 20
+        },
+        {
+          "code": "FGT-027",
+          "name": "ماسورة حديد أسود 4 بوصة (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 170,
+          "install_cost": 24
+        },
+        {
+          "code": "FGT-028",
+          "name": "ماسورة حديد أسود 6 بوصة (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 300,
+          "install_cost": 32
+        },
+        {
+          "code": "FGT-029",
+          "name": "ماسورة CPVC للأطفاء بالرشاشات 25مم (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 28,
+          "install_cost": 8
+        },
+        {
+          "code": "FGT-030",
+          "name": "ماسورة CPVC 50مم (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 55,
+          "install_cost": 10
+        },
+        {
+          "code": "FGT-031",
+          "name": "ماسورة CPVC 100مم (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 140,
+          "install_cost": 14
+        },
+        {
+          "code": "FGT-032",
+          "name": "ماسورة HDPE للتغذية الخارجية 63مم (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 45,
+          "install_cost": 8
+        },
+        {
+          "code": "FGT-033",
+          "name": "ماسورة HDPE 90مم (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 85,
+          "install_cost": 10
+        },
+        {
+          "code": "FGT-034",
+          "name": "ماسورة HDPE 110مم (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 120,
+          "install_cost": 12
+        }
+      ],
+      "system": "fighting"
+    },
+    {
+      "name": "التوصيلات (أكواع - تيه - نقاصات)",
+      "items": [
+        {
+          "code": "FGT-035",
+          "name": "كوع 90° مجلفن قطر 1 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 12,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-036",
+          "name": "كوع 90° مجلفن قطر 1.5 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 20,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-037",
+          "name": "كوع 90° مجلفن قطر 2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 28,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-038",
+          "name": "كوع 90° مجلفن قطر 3 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 48,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-039",
+          "name": "كوع 90° مجلفن قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 75,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-040",
+          "name": "كوع 90° مجلفن قطر 6 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 160,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-041",
+          "name": "كوع 45° مجلفن قطر 2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 24,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-042",
+          "name": "كوع 45° مجلفن قطر 3 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 40,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-043",
+          "name": "كوع 45° مجلفن قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 62,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-044",
+          "name": "تيه (TEE) مجلفن قطر 1 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 18,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-045",
+          "name": "تيه (TEE) مجلفن قطر 1.5 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 30,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-046",
+          "name": "تيه (TEE) مجلفن قطر 2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 42,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-047",
+          "name": "تيه (TEE) مجلفن قطر 3 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 72,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-048",
+          "name": "تيه (TEE) مجلفن قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 110,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-049",
+          "name": "تيه (TEE) مجلفن قطر 6 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 240,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-050",
+          "name": "نقاص (Reducer) 2 إلى 1.5 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 22,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-051",
+          "name": "نقاص (Reducer) 2 إلى 1 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 20,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-052",
+          "name": "نقاص (Reducer) 3 إلى 2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 35,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-053",
+          "name": "نقاص (Reducer) 4 إلى 3 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 58,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-054",
+          "name": "نقاص (Reducer) 6 إلى 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 130,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-055",
+          "name": "وصلة (Coupling) مجلفن قطر 1 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 10,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-056",
+          "name": "وصلة (Coupling) مجلفن قطر 2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 20,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-057",
+          "name": "وصلة (Coupling) مجلفن قطر 3 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 38,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-058",
+          "name": "وصلة (Coupling) مجلفن قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 60,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-059",
+          "name": "صامولة وصل (Union) قطر 1 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 22,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-060",
+          "name": "صامولة وصل (Union) قطر 2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 45,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-061",
+          "name": "حلمة (Nipple) قطر 1 بوصة × 10سم",
+          "unit": "وحدة",
+          "supply_cost": 8,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-062",
+          "name": "حلمة (Nipple) قطر 2 بوصة × 10سم",
+          "unit": "وحدة",
+          "supply_cost": 16,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-063",
+          "name": "غطاء نهاية (Cap) قطر 1 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 8,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-064",
+          "name": "غطاء نهاية (Cap) قطر 2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 15,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-065",
+          "name": "غطاء نهاية (Cap) قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 45,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-066",
+          "name": "فلنجة (Flange) قطر 4 بوصة مع طقم براغي",
+          "unit": "وحدة",
+          "supply_cost": 120,
+          "install_cost": 30
+        },
+        {
+          "code": "FGT-067",
+          "name": "فلنجة (Flange) قطر 6 بوصة مع طقم براغي",
+          "unit": "وحدة",
+          "supply_cost": 220,
+          "install_cost": 40
+        },
+        {
+          "code": "FGT-068",
+          "name": "وصلة Groove (Victaulic) قطر 2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 90,
+          "install_cost": 15
+        },
+        {
+          "code": "FGT-069",
+          "name": "وصلة Groove (Victaulic) قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 160,
+          "install_cost": 20
+        },
+        {
+          "code": "FGT-070",
+          "name": "وصلة Groove (Victaulic) قطر 6 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 280,
+          "install_cost": 30
+        },
+        {
+          "code": "FGT-071",
+          "name": "كوع Groove قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 180,
+          "install_cost": 25
+        },
+        {
+          "code": "FGT-072",
+          "name": "تيه Groove قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 240,
+          "install_cost": 30
+        },
+        {
+          "code": "FGT-073",
+          "name": "لصق CPVC + منظف (مجموعة)",
+          "unit": "وحدة",
+          "supply_cost": 45,
+          "install_cost": 0
+        }
+      ],
+      "system": "fighting"
+    },
+    {
+      "name": "العلاقات والمثبتات",
+      "items": [
+        {
+          "code": "FGT-074",
+          "name": "علاقة ماسورة بسيطة (Pipe Hanger) قطر 1 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 8,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-075",
+          "name": "علاقة ماسورة بسيطة قطر 1.5 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 10,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-076",
+          "name": "علاقة ماسورة بسيطة قطر 2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 12,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-077",
+          "name": "علاقة ماسورة بسيطة قطر 3 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 18,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-078",
+          "name": "علاقة ماسورة بسيطة قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 28,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-079",
+          "name": "علاقة ماسورة بسيطة قطر 6 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 55,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-080",
+          "name": "حمالة على شكل U (U-Bolt) قطر 2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 16,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-081",
+          "name": "حمالة U-Bolt قطر 3 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 24,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-082",
+          "name": "حمالة U-Bolt قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 38,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-083",
+          "name": "قناة حديدية للتركيب (Strut Channel) 41×41 (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 25,
+          "install_cost": 6
+        },
+        {
+          "code": "FGT-084",
+          "name": "ركازة/قاعدة قناة (Channel Base)",
+          "unit": "وحدة",
+          "supply_cost": 30,
+          "install_cost": 10
+        },
+        {
+          "code": "FGT-085",
+          "name": "مشبك قناة (Channel Clamp)",
+          "unit": "وحدة",
+          "supply_cost": 12,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-086",
+          "name": "قضيب تعليق (Threaded Rod) 10مم (م/متر)",
+          "unit": "وحدة",
+          "supply_cost": 8,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-087",
+          "name": "صامولة قناة (Channel Nut) مع برغي",
+          "unit": "وحدة",
+          "supply_cost": 4,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-088",
+          "name": "بلاطة تثبيت (Anchor Plate)",
+          "unit": "وحدة",
+          "supply_cost": 15,
+          "install_cost": 8
+        },
+        {
+          "code": "FGT-089",
+          "name": "مسامير تثبيت خرسانة (Expansion Bolt) طقم",
+          "unit": "وحدة",
+          "supply_cost": 3,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-090",
+          "name": "علاقة حدادة ملحومة حسب التصميم",
+          "unit": "وحدة",
+          "supply_cost": 35,
+          "install_cost": 15
+        }
+      ],
+      "system": "fighting"
+    },
+    {
+      "name": "المحابس والصمامات",
+      "items": [
+        {
+          "code": "FGT-091",
+          "name": "محبس بوابة (Gate Valve) قطر 1.5 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 95,
+          "install_cost": 40
+        },
+        {
+          "code": "FGT-092",
+          "name": "محبس بوابة (Gate Valve) قطر 2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 130,
+          "install_cost": 50
+        },
+        {
+          "code": "FGT-093",
+          "name": "محبس بوابة (Gate Valve) قطر 3 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 250,
+          "install_cost": 70
+        },
+        {
+          "code": "FGT-094",
+          "name": "محبس بوابة (Gate Valve) قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 450,
+          "install_cost": 90
+        },
+        {
+          "code": "FGT-095",
+          "name": "محبس بوابة (Gate Valve) قطر 6 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 900,
+          "install_cost": 130
+        },
+        {
+          "code": "FGT-096",
+          "name": "محبس OS&Y قطر 2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 650,
+          "install_cost": 200
+        },
+        {
+          "code": "FGT-097",
+          "name": "محبس OS&Y قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 1600,
+          "install_cost": 300
+        },
+        {
+          "code": "FGT-098",
+          "name": "محبس OS&Y قطر 6 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 3200,
+          "install_cost": 400
+        },
+        {
+          "code": "FGT-099",
+          "name": "محبس فراشة (Butterfly Valve) قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 850,
+          "install_cost": 150
+        },
+        {
+          "code": "FGT-100",
+          "name": "محبس فراشة (Butterfly Valve) قطر 6 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 1500,
+          "install_cost": 200
+        },
+        {
+          "code": "FGT-101",
+          "name": "محبس عدم رجوع (Check Valve) قطر 2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 220,
+          "install_cost": 60
+        },
+        {
+          "code": "FGT-102",
+          "name": "محبس عدم رجوع (Check Valve) قطر 3 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 380,
+          "install_cost": 80
+        },
+        {
+          "code": "FGT-103",
+          "name": "محبس عدم رجوع (Check Valve) قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 620,
+          "install_cost": 100
+        },
+        {
+          "code": "FGT-104",
+          "name": "منظم ضغط (Pressure Reducing Valve) قطر 2.5 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 1500,
+          "install_cost": 250
+        },
+        {
+          "code": "FGT-105",
+          "name": "منظم ضغط (PRV) قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 3200,
+          "install_cost": 350
+        },
+        {
+          "code": "FGT-106",
+          "name": "صمام تنفيس (Relief Valve) قطر 1 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 160,
+          "install_cost": 40
+        },
+        {
+          "code": "FGT-107",
+          "name": "صمام هواء (Air Release Valve) قطر 1 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 120,
+          "install_cost": 35
+        },
+        {
+          "code": "FGT-108",
+          "name": "صمام إنذار تدفق مائي (Alarm Check Valve) قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 2600,
+          "install_cost": 400
+        },
+        {
+          "code": "FGT-109",
+          "name": "غرفة تأخير (Retard Chamber)",
+          "unit": "وحدة",
+          "supply_cost": 450,
+          "install_cost": 120
+        },
+        {
+          "code": "FGT-110",
+          "name": "صمام تحكم منطقة (Zone Control Valve)",
+          "unit": "وحدة",
+          "supply_cost": 420,
+          "install_cost": 90
+        }
+      ],
+      "system": "fighting"
+    },
+    {
+      "name": "رشاشات ومكوناتها",
+      "items": [
+        {
+          "code": "FGT-111",
+          "name": "رشاش مياه مخفي (Concealed) 1/2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 65,
+          "install_cost": 45
+        },
+        {
+          "code": "FGT-112",
+          "name": "رشاش مياه علوي (Upright) 1/2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 55,
+          "install_cost": 45
+        },
+        {
+          "code": "FGT-113",
+          "name": "رشاش مياه سفلي (Pendent) 1/2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 60,
+          "install_cost": 45
+        },
+        {
+          "code": "FGT-114",
+          "name": "رشاش مياه جنبي (Sidewall) 1/2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 70,
+          "install_cost": 45
+        },
+        {
+          "code": "FGT-115",
+          "name": "رشاش استجابة سريعة (Quick Response)",
+          "unit": "وحدة",
+          "supply_cost": 80,
+          "install_cost": 50
+        },
+        {
+          "code": "FGT-116",
+          "name": "رشاش لمخاطر عالية (Extra Hazard)",
+          "unit": "وحدة",
+          "supply_cost": 160,
+          "install_cost": 60
+        },
+        {
+          "code": "FGT-117",
+          "name": "رشاش مقاوم للتآكل (Corrosion Resistant)",
+          "unit": "وحدة",
+          "supply_cost": 190,
+          "install_cost": 55
+        },
+        {
+          "code": "FGT-118",
+          "name": "مركب رشاش (Sprinkler Reducer Coupling)",
+          "unit": "وحدة",
+          "supply_cost": 18,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-119",
+          "name": "رافعة رشاش (Drop Nipple) 1/2 × 15سم",
+          "unit": "وحدة",
+          "supply_cost": 25,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-120",
+          "name": "رافعة رشاش 1/2 × 30سم",
+          "unit": "وحدة",
+          "supply_cost": 35,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-121",
+          "name": "صينية/غلاف رشاش (Escutcheon)",
+          "unit": "وحدة",
+          "supply_cost": 8,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-122",
+          "name": "جهاز إنذار تدفق المياه (Flow Switch)",
+          "unit": "وحدة",
+          "supply_cost": 380,
+          "install_cost": 90
+        },
+        {
+          "code": "FGT-123",
+          "name": "جهاز مراقبة ضغط (Pressure Switch)",
+          "unit": "وحدة",
+          "supply_cost": 320,
+          "install_cost": 80
+        },
+        {
+          "code": "FGT-124",
+          "name": "مقياس ضغط (Pressure Gauge)",
+          "unit": "وحدة",
+          "supply_cost": 45,
+          "install_cost": 20
+        },
+        {
+          "code": "FGT-125",
+          "name": "قابس تصريف (Drain Valve) قطر 2 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 140,
+          "install_cost": 50
+        },
+        {
+          "code": "FGT-126",
+          "name": "صمام اختبار (Test & Drain Valve)",
+          "unit": "وحدة",
+          "supply_cost": 220,
+          "install_cost": 60
+        }
+      ],
+      "system": "fighting"
+    },
+    {
+      "name": "أنظمة الخراطيم والصنابير",
+      "items": [
+        {
+          "code": "FGT-127",
+          "name": "صندوق حريق داخلي (Fire Hose Cabinet) مدمج مع خرطوم",
+          "unit": "وحدة",
+          "supply_cost": 850,
+          "install_cost": 150
+        },
+        {
+          "code": "FGT-128",
+          "name": "صندوق حريق داخلي مع خرطوم ومفتاح ومخروط",
+          "unit": "وحدة",
+          "supply_cost": 1200,
+          "install_cost": 200
+        },
+        {
+          "code": "FGT-129",
+          "name": "خرطوم حريق داخلي 25م مع فوهة",
+          "unit": "وحدة",
+          "supply_cost": 650,
+          "install_cost": 80
+        },
+        {
+          "code": "FGT-130",
+          "name": "خرطوم حريق داخل 30م",
+          "unit": "وحدة",
+          "supply_cost": 750,
+          "install_cost": 90
+        },
+        {
+          "code": "FGT-131",
+          "name": "مفتاح حريق (Fire Hose Valve) قطر 1.5 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 280,
+          "install_cost": 60
+        },
+        {
+          "code": "FGT-132",
+          "name": "مفتاح حريق قطر 2.5 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 450,
+          "install_cost": 80
+        },
+        {
+          "code": "FGT-133",
+          "name": "فوهة خرطوم (Nozzle) مزدوجة",
+          "unit": "وحدة",
+          "supply_cost": 180,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-134",
+          "name": "وصلة خرطوم (Hose Coupling)",
+          "unit": "وحدة",
+          "supply_cost": 60,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-135",
+          "name": "صنبور حريق خارجي (Fire Hydrant)",
+          "unit": "وحدة",
+          "supply_cost": 950,
+          "install_cost": 300
+        },
+        {
+          "code": "FGT-136",
+          "name": "صنبور خارجي بأعمدة (Post Hydrant)",
+          "unit": "وحدة",
+          "supply_cost": 2200,
+          "install_cost": 600
+        },
+        {
+          "code": "FGT-137",
+          "name": "صندوق حريق خارجي مجهز (Fire Department Connection)",
+          "unit": "وحدة",
+          "supply_cost": 2800,
+          "install_cost": 700
+        },
+        {
+          "code": "FGT-138",
+          "name": "مرشح شوائب (Strainer) قطر 4 بوصة",
+          "unit": "وحدة",
+          "supply_cost": 450,
+          "install_cost": 100
+        },
+        {
+          "code": "FGT-139",
+          "name": "صمام ربط معدن (Siamese Connection)",
+          "unit": "وحدة",
+          "supply_cost": 1200,
+          "install_cost": 250
+        }
+      ],
+      "system": "fighting"
+    },
+    {
+      "name": "مضخات الحريق",
+      "items": [
+        {
+          "code": "FGT-140",
+          "name": "مضخة حريق رئيسية كهربائية 25 ل/ث - حسب المواصفات",
+          "unit": "وحدة",
+          "supply_cost": 0,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-141",
+          "name": "مضخة حريق احتياطية ديزل 25 ل/ث - حسب المواصفات",
+          "unit": "وحدة",
+          "supply_cost": 0,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-142",
+          "name": "مضخة معززة (Jockey Pump)",
+          "unit": "وحدة",
+          "supply_cost": 7500,
+          "install_cost": 1500
+        },
+        {
+          "code": "FGT-143",
+          "name": "لوحة تحكم مضخة كهربائية (Starter Panel)",
+          "unit": "وحدة",
+          "supply_cost": 4500,
+          "install_cost": 800
+        },
+        {
+          "code": "FGT-144",
+          "name": "لوحة تحكم مضخة ديزل (Diesel Controller)",
+          "unit": "وحدة",
+          "supply_cost": 5500,
+          "install_cost": 900
+        },
+        {
+          "code": "FGT-145",
+          "name": "جهاز انتقال تلقائي ATS",
+          "unit": "وحدة",
+          "supply_cost": 4800,
+          "install_cost": 700
+        },
+        {
+          "code": "FGT-146",
+          "name": "خزان حريق أفقي 1000 لتر",
+          "unit": "وحدة",
+          "supply_cost": 3500,
+          "install_cost": 800
+        },
+        {
+          "code": "FGT-147",
+          "name": "خزان حريق أفقي 5000 لتر",
+          "unit": "وحدة",
+          "supply_cost": 12000,
+          "install_cost": 1500
+        },
+        {
+          "code": "FGT-148",
+          "name": "خزان حريق عمودي 10000 لتر",
+          "unit": "وحدة",
+          "supply_cost": 20000,
+          "install_cost": 2200
+        },
+        {
+          "code": "FGT-149",
+          "name": "صمام إدخال مياه البلدية (City Inlet)",
+          "unit": "وحدة",
+          "supply_cost": 1800,
+          "install_cost": 400
+        },
+        {
+          "code": "FGT-150",
+          "name": "عدّاد تدفق (Flow Meter)",
+          "unit": "وحدة",
+          "supply_cost": 650,
+          "install_cost": 150
+        }
+      ],
+      "system": "fighting"
+    },
+    {
+      "name": "أنظمة الإطفاء بالغاز",
+      "items": [
+        {
+          "code": "FGT-151",
+          "name": "نظام إطفاء غاز FM200 - تصميم حسب حجم الغرفة",
+          "unit": "وحدة",
+          "supply_cost": 0,
+          "install_cost": 0
+        },
+        {
+          "code": "FGT-152",
+          "name": "صهريج غاز FM200 45 لتر",
+          "unit": "وحدة",
+          "supply_cost": 14000,
+          "install_cost": 1500
+        },
+        {
+          "code": "FGT-153",
+          "name": "صهريج غاز FM200 90 لتر",
+          "unit": "وحدة",
+          "supply_cost": 22000,
+          "install_cost": 2000
+        },
+        {
+          "code": "FGT-154",
+          "name": "صهريج غاز CO2 50 كجم",
+          "unit": "وحدة",
+          "supply_cost": 9000,
+          "install_cost": 1200
+        },
+        {
+          "code": "FGT-155",
+          "name": "صهريج غاز CO2 100 كجم",
+          "unit": "وحدة",
+          "supply_cost": 16000,
+          "install_cost": 1800
+        },
+        {
+          "code": "FGT-156",
+          "name": "مجموعة فوهات إطلاق الغاز (Discharge Nozzles)",
+          "unit": "وحدة",
+          "supply_cost": 350,
+          "install_cost": 80
+        },
+        {
+          "code": "FGT-157",
+          "name": "صمام إطلاق (Discharge Valve)",
+          "unit": "وحدة",
+          "supply_cost": 850,
+          "install_cost": 200
+        },
+        {
+          "code": "FGT-158",
+          "name": "لوحة تحكم إطفاء غاز (Gas Panel)",
+          "unit": "وحدة",
+          "supply_cost": 3200,
+          "install_cost": 600
+        },
+        {
+          "code": "FGT-159",
+          "name": "جهاز إنذار بصوت قبل الإطلاق (Pneumatic Horn)",
+          "unit": "وحدة",
+          "supply_cost": 180,
+          "install_cost": 50
+        },
+        {
+          "code": "FGT-160",
+          "name": "زر إطلاق يدوي للغاز",
+          "unit": "وحدة",
+          "supply_cost": 120,
+          "install_cost": 40
+        },
+        {
+          "code": "FGT-161",
+          "name": "خزانة اسطوانات غاز (Cylinder Rack)",
+          "unit": "وحدة",
+          "supply_cost": 1200,
+          "install_cost": 250
+        },
+        {
+          "code": "FGT-162",
+          "name": "وزن الكشف عن التسرب (Cylinder Scale)",
+          "unit": "وحدة",
+          "supply_cost": 450,
+          "install_cost": 80
+        }
+      ],
+      "system": "fighting"
+    }
+  ]
+}
