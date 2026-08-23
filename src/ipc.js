@@ -43,7 +43,7 @@ function registerIpc(db) {
   const handle = (channel, fn) => {
     ipcMain.handle(channel, async (event, payload) => {
       try {
-        return ok(fn(payload, event));
+        return ok(await fn(payload, event));
       } catch (err) {
         console.error(`[IPC] ${channel} فشل:`, err);
         return bad(err);
