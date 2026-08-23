@@ -1,19 +1,21 @@
 {
   "name": "fire-pricing",
   "productName": "نظام التسعير الذكي للحماية من الحرائق",
-  "version": "2.2.3",
+  "version": "2.4.0",
   "description": "نظام تسعير ذكي لمشاريع توريد وتركيب أنظمة الإطفاء والإنذار من الحريق — بقاعدة بيانات SQLite ومكتبة أجهزة ومواد كاملة",
   "main": "main.js",
   "author": {
     "name": "شركة مقاولات الحماية من الحرائق"
   },
-  "license": "MIT",
+  "license": "UNLICENSED",
   "scripts": {
     "start": "electron .",
     "test": "node --test src/",
     "seed": "node scripts/generate-seeds.js",
     "rebuild": "electron-rebuild -f -w better-sqlite3",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "license:keys": "node tools/generate-keys.js",
+    "license:gen": "node tools/generate-license.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",

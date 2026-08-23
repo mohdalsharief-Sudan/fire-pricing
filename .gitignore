@@ -174,3 +174,18 @@
 *.lz
 *.lzma
 *.iso
+
+# ===== تطبيق النظام =====
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.exe
+*.msi
+*.log
+backup-*.json
+fire-pricing-backup-*.json
+
+# ===== مفاتيح الترخيص (سرية — لا تُرفع أبداً) =====
+license-keys/
+*.pem

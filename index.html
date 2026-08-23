@@ -334,6 +334,7 @@
         <input type="text" id="catSearch" placeholder="بحث بالاسم / الكود / الماركة...">
         <button class="btn btn-primary" id="btnAddCatalogItem">+ إضافة صنف</button>
         <button class="btn btn-secondary" id="btnBulkUpdate">تحديث أسعار شامل</button>
+        <button class="btn btn-secondary" id="btnImportExcel">📥 استيراد أسعار من Excel</button>
       </div>
       <div class="table-wrap">
         <table class="table" id="catTable">
@@ -568,6 +569,79 @@
   </div>
 </div>
 
+<!-- Modal: استيراد أسعار من Excel -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <h3>📥 استيراد أسعار من Excel / CSV</h3>
+      <button class="modal-close" id="importClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="hint">اختر ملف أسعار من موردك (Excel أو CSV)، وحدد الأعمدة، ثم حدّث أسعار المكتبة دفعة واحدة — مع تسجيل كل تغيير في سجل الأسعار.</p>
+      <div class="toolbar">
+        <button class="btn btn-primary" id="btnImportPick">اختيار ملف الأسعار...</button>
+        <span id="importFileName" class="hint" style="margin:0"></span>
+      </div>
+      <div id="importError" class="lic-error" style="display:none;margin:10px 0"></div>
+      <div id="importMapping" style="display:none">
+        <div class="field" id="importSheetRow" style="display:none">
+          <label>ورقة العمل</label>
+          <select id="importSheet"></select>
+        </div>
+        <label class="check-row"><input type="checkbox" id="importHeaderRow" checked> الصف الأول عناوين أعمدة (يُتجاهل في الاستيراد)</label>
+        <div class="grid-3">
+          <div class="field">
+            <label>عمود اسم الصنف *</label>
+            <select id="importColName"></select>
+          </div>
+          <div class="field">
+            <label>عمود السعر *</label>
+            <select id="importColPrice"></select>
+          </div>
+          <div class="field">
+            <label>عمود الوحدة (اختياري)</label>
+            <select id="importColUnit"></select>
+          </div>
+          <div class="field">
+            <label>عمود الكود (اختياري)</label>
+            <select id="importColCode"></select>
+          </div>
+          <div class="field">
+            <label>تحديث سعر</label>
+            <select id="importField">
+              <option value="supply_cost">التوريد</option>
+              <option value="install_cost">التركيب</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>مطابقة الصنف بـ</label>
+            <select id="importMatchBy">
+              <option value="name">الاسم</option>
+              <option value="code">الكود</option>
+            </select>
+          </div>
+        </div>
+        <label class="check-row"><input type="checkbox" id="importCreateMissing" checked> إضافة الأصناف غير الموجودة في المكتبة</label>
+        <div class="field" id="importCatRow">
+          <label>الفئة للأصناف الجديدة</label>
+          <select id="importCategory"></select>
+        </div>
+        <div class="table-wrap" style="margin-top:10px">
+          <table class="table">
+            <thead><tr><th colspan="6">معاينة (أول 8 صفوف)</th></tr></thead>
+            <tbody id="importPreview"></tbody>
+          </table>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-primary" id="btnImportRun">استيراد وتحديث الأسعار</button>
+          <span id="importProgress" class="hint" style="margin:0 10px"></span>
+        </div>
+        <div id="importResult" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: عميل -->
 <div class="modal-overlay" id="clientModal">
   <div class="modal">
@@ -669,6 +743,8 @@
 
 <script src="js/data.js"></script>
 <script src="js/calc.js"></script>
+<script src="js/license-core.js"></script>
+<script src="js/license-public-key.js"></script>
 <script src="js/api.js"></script>
 <script src="js/app.js"></script>
 </body>

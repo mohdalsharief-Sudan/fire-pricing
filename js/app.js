@@ -1481,6 +1481,234 @@ on("bulkRun", "click", async () => {
 on("bulkClose", "click", () => bulkModal.classList.remove("show"));
 bulkModal.addEventListener("click", e => { if (e.target === bulkModal) bulkModal.classList.remove("show"); });
 
+/* ================= استيراد أسعار من Excel / CSV ================= */
+
+let importState = { path: "", sheets: [], sheet: 0, rows: [], headerRow: [] };
+
+function openImportModal() {
+  importState = { path: "", sheets: [], sheet: 0, rows: [], headerRow: [] };
+  document.getElementById("importFileName").textContent = "";
+  document.getElementById("importError").style.display = "none";
+  document.getElementById("importError").textContent = "";
+  document.getElementById("importMapping").style.display = "none";
+  document.getElementById("importResult").innerHTML = "";
+  document.getElementById("importProgress").textContent = "";
+  document.getElementById("importModal").classList.add("show");
+}
+
+function importError(msg) {
+  const el = document.getElementById("importError");
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+function fillImportColumns() {
+  const header = importState.headerRow;
+  const n = header.length;
+  const opt = (label, i) => `<option value="${i}">${esc(String(label || "")) || "عمود " + (i + 1)}</option>`;
+  const emptyOpt = '<option value="-1">— لا شيء —</option>';
+  const nameOpts = header.map((h, i) => opt(h, i)).join("");
+  const otherOpts = emptyOpt + header.map((h, i) => opt(h, i)).join("");
+  document.getElementById("importColName").innerHTML = nameOpts;
+  document.getElementById("importColPrice").innerHTML = nameOpts;
+  document.getElementById("importColUnit").innerHTML = otherOpts;
+  document.getElementById("importColCode").innerHTML = otherOpts;
+  /* افتراضيات ذكية: السعر غالباً العمود رقم 2 */
+  if (n >= 2) document.getElementById("importColPrice").value = "1";
+}
+
+function renderImportPreview() {
+  const body = document.getElementById("importPreview");
+  const rows = importState.sheets[importState.sheet] ? importState.sheets[importState.sheet].rows : [];
+  body.innerHTML = "";
+  rows.slice(0, 8).forEach((r, ri) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td colspan="6" style="font-size:12px;font-family:Consolas,monospace;direction:ltr;text-align:left">${esc(r.join(" | "))}</td>`;
+    body.appendChild(tr);
+  });
+  if (!rows.length) body.innerHTML = `<tr><td colspan="6" class="hint">لا توجد صفوف</td></tr>`;
+}
+
+function fillImportCategories() {
+  const sel = document.getElementById("importCategory");
+  const mats = CATEGORIES.filter(c => c.kind === "material");
+  const eqs = CATEGORIES.filter(c => c.kind === "equipment");
+  sel.innerHTML =
+    (mats.length ? mats.map(c => `<option value="${c.id}">${esc(c.name)} (مواد)</option>`).join("") : "") +
+    (eqs.length ? eqs.map(c => `<option value="${c.id}">${esc(c.name)} (أجهزة)</option>`).join("") : "");
+}
+
+on("btnImportExcel", "click", () => {
+  openImportModal();
+  fillImportCategories();
+});
+
+on("btnImportPick", "click", async () => {
+  try {
+    const res = await API.excelOpen();
+    if (!res) return;
+    if (res.error) { importError(res.error); return; }
+    if (res.canceled || !res.sheets || !res.sheets.length) return;
+    importState.path = res.path || "";
+    importState.sheets = res.sheets;
+    importState.sheet = 0;
+    document.getElementById("importFileName").textContent = importState.path;
+    document.getElementById("importError").style.display = "none";
+    const sel = document.getElementById("importSheet");
+    if (res.sheets.length > 1) {
+      sel.innerHTML = res.sheets.map((s, i) => `<option value="${i}">${esc(s.name)}</option>`).join("");
+      document.getElementById("importSheetRow").style.display = "";
+    } else {
+      document.getElementById("importSheetRow").style.display = "none";
+    }
+    importState.headerRow = res.sheets[0].rows[0] || [];
+    fillImportColumns();
+    renderImportPreview();
+    document.getElementById("importMapping").style.display = "";
+  } catch (e) {
+    importError(e.message);
+  }
+});
+
+on("importSheet", "change", e => {
+  importState.sheet = parseInt(e.target.value) || 0;
+  const rows = importState.sheets[importState.sheet] ? importState.sheets[importState.sheet].rows : [];
+  importState.headerRow = rows[0] || [];
+  fillImportColumns();
+  renderImportPreview();
+});
+
+on("importHeaderRow", "change", () => {
+  /* إعادة بناء الأعمدة حسب الصف الأول */
+  const rows = importState.sheets[importState.sheet] ? importState.sheets[importState.sheet].rows : [];
+  const header = document.getElementById("importHeaderRow").checked ? (rows[0] || []) : [];
+  importState.headerRow = header;
+  fillImportColumns();
+  renderImportPreview();
+});
+
+on("btnImportRun", "click", async () => {
+  const nameCol = parseInt(document.getElementById("importColName").value);
+  const priceCol = parseInt(document.getElementById("importColPrice").value);
+  if (isNaN(nameCol) || nameCol < 0 || isNaN(priceCol) || priceCol < 0) {
+    importError("حدد عمود الاسم وعمود السعر أولاً");
+    return;
+  }
+  const unitCol = parseInt(document.getElementById("importColUnit").value);
+  const codeCol = parseInt(document.getElementById("importColCode").value);
+  const field = document.getElementById("importField").value;
+  const matchBy = document.getElementById("importMatchBy").value;
+  const createMissing = document.getElementById("importCreateMissing").checked;
+  const categoryId = parseInt(document.getElementById("importCategory").value) || 0;
+  const skipHeader = document.getElementById("importHeaderRow").checked;
+
+  document.getElementById("importProgress").textContent = "جارٍ قراءة الملف...";
+  try {
+    const read = await API.excelRead(importState.path ? { path: importState.path, sheet: importState.sheet } : {});
+    const rows = read.rows || [];
+    if (!rows.length) { importError("الملف لا يحتوي صفوفاً"); return; }
+    const start = skipHeader ? 1 : 0;
+    const catalog = await API.catalogList({ activeOnly: false });
+    const byName = {};
+    const byCode = {};
+    const byNorm = {};
+    catalog.forEach(it => {
+      byName[String(it.name || "").trim().toLowerCase()] = it;
+      if (it.code) byCode[String(it.code).trim().toLowerCase()] = it;
+      byNorm[normName(it.name)] = it;
+    });
+
+    /* مطابقة ذكية: تنظيف الاسم من الإنجليزي والأقواس قبل المقارنة */
+    function normName(s) {
+      return String(s || "")
+        .toLowerCase()
+        .replace(/\([^)]*\)/g, "")
+        .replace(/[^a-z0-9\u0600-\u06FF\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+    function findMatch(name, codeVal) {
+      const keyName = String(name || "").trim().toLowerCase();
+      const keyCode = String(codeVal || "").trim().toLowerCase();
+      if (matchBy === "code") {
+        if (byCode[keyCode]) return byCode[keyCode];
+        if (byName[keyName]) return byName[keyName];
+      } else {
+        if (byName[keyName]) return byName[keyName];
+        if (byCode[keyCode]) return byCode[keyCode];
+      }
+      const norm = normName(name);
+      if (norm.length >= 4 && byNorm[norm]) return byNorm[norm];
+      if (norm.length >= 4) {
+        const found = catalog.find(it => {
+          const itNorm = normName(it.name);
+          return itNorm.includes(norm) || norm.includes(itNorm);
+        });
+        if (found) return found;
+      }
+      return null;
+    }
+
+    let updated = 0, added = 0, skipped = 0;
+    const total = rows.length - start;
+    let i = 0;
+    document.getElementById("importProgress").textContent = "جارٍ التحديث...";
+    for (let r = start; r < rows.length; r++) {
+      const row = rows[r];
+      if (!row) continue;
+      const name = String(row[nameCol] == null ? "" : row[nameCol]).trim();
+      const price = parseFloat(String(row[priceCol] == null ? "" : row[priceCol]).replace(/[^\d.\-]/g, ""));
+      i++;
+      if (i % 100 === 0) document.getElementById("importProgress").textContent = `جارٍ التحديث... ${i}/${total}`;
+      if (!name) { skipped++; continue; }
+      const codeVal = codeCol >= 0 && row[codeCol] != null ? String(row[codeCol]).trim() : "";
+      const item = findMatch(name, codeVal);
+      if (item) {
+        if (!isNaN(price) && price >= 0) {
+          const patch = { id: item.id, name: item.name, category_id: item.category_id, code: item.code, unit: item.unit, supply_cost: item.supply_cost, install_cost: item.install_cost, is_active: item.is_active, source: "استيراد Excel" };
+          if (unitCol >= 0 && row[unitCol] != null && String(row[unitCol]).trim()) patch.unit = String(row[unitCol]).trim();
+          patch[field] = price;
+          await API.catalogUpdate(patch);
+          updated++;
+        } else skipped++;
+      } else if (createMissing && categoryId && !isNaN(price) && price >= 0) {
+        const unit = (unitCol >= 0 && row[unitCol] != null) ? String(row[unitCol]).trim() : "وحدة";
+        const payload = {
+          category_id: categoryId,
+          category_name: (CATEGORIES.find(c => c.id === categoryId) || {}).name || "غير مصنف",
+          name,
+          code: codeVal || "",
+          unit: unit || "وحدة",
+          supply_cost: (field === "supply_cost" && !isNaN(price)) ? price : 0,
+          install_cost: (field === "install_cost" && !isNaN(price)) ? price : 0
+        };
+        const created = await API.catalogAdd(payload);
+        byName[name.toLowerCase()] = created;
+        if (created.code) byCode[String(created.code).toLowerCase()] = created;
+        byNorm[normName(name)] = created;
+        added++;
+      } else skipped++;
+    }
+    document.getElementById("importProgress").textContent = "";
+    document.getElementById("importResult").innerHTML = `
+      <div class="import-summary">
+        <span class="s-good">✅ تم تحديث ${updated} صنفاً</span>
+        <span class="s-new">➕ تمت إضافة ${added} صنفاً جديداً</span>
+        <span class="s-skip">⏭️ تم تخطي ${skipped} صفاً</span>
+      </div>
+      <p class="hint">كل تغيير سُجل في سجل الأسعار بمصدر "استيراد Excel".</p>`;
+    await refreshCatalog();
+    renderCatalog();
+    toast(`اكتمل الاستيراد: تحديث ${updated} + إضافة ${added}`);
+  } catch (e) {
+    document.getElementById("importProgress").textContent = "";
+    importError("فشل الاستيراد: " + e.message);
+  }
+});
+
+on("importClose", "click", () => document.getElementById("importModal").classList.remove("show"));
+on("importModal", "click", e => { if (e.target && e.target.id === "importModal") e.target.classList.remove("show"); });
+
 /* ================= العملاء ================= */
 
 async function refreshClients() {

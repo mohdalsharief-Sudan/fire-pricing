@@ -23,6 +23,8 @@ window.FireAPI = (function () {
       catalogUpdate: (p) => call("catalog_update", p),
       catalogHistory: (id) => call("catalog_history", { id }),
       catalogBulkUpdate: (p) => call("catalog_bulkUpdate", p),
+      excelOpen: () => call("catalog_excelOpen"),
+      excelRead: (p) => call("catalog_excelRead", p),
       clientsList: (search) => call("clients_list", { search }),
       clientsSave: (p) => call("clients_save", p),
       clientsDelete: (id) => call("clients_delete", { id }),
@@ -86,6 +88,34 @@ window.FireAPI = (function () {
     return items;
   }
 
+  /* ---------- CSV في المتصفح ---------- */
+  function parseSimpleCsv(text) {
+    const t = String(text || "").replace(/^\uFEFF/, "").replace(/\r\n/g, "\n");
+    const lines = t.split("\n").filter(l => l.trim() !== "");
+    if (!lines.length) return [];
+    const delims = [",", ";", "\t"];
+    let best = ",", bestCount = -1;
+    delims.forEach(d => {
+      const count = (lines[0].match(new RegExp("\\" + d, "g")) || []).length;
+      if (count > bestCount) { bestCount = count; best = d; }
+    });
+    const split = (line) => {
+      const cells = []; let cur = "", inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (inQ) { if (ch === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false; } else cur += ch; }
+        else if (ch === '"') inQ = true;
+        else if (ch === best) { cells.push(cur); cur = ""; }
+        else cur += ch;
+      }
+      cells.push(cur);
+      return cells.map(c => c.trim());
+    };
+    return lines.map(split);
+  }
+
+  let excelState = null;   /* آخر ملف CSV مقروء في وضع المتصفح */
+
   function filterItems(p) {
     p = p || {};
     let items = catalog();
@@ -144,6 +174,27 @@ window.FireAPI = (function () {
       const map = ls.get(K_PH) || {};
       return delay((map[id] || []).slice().reverse());
     },
+    excelOpen: () => new Promise(resolve => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = ".csv,text/csv";
+      input.onchange = () => {
+        const file = input.files && input.files[0];
+        if (!file) { resolve({ canceled: true }); return; }
+        if (!/\.csv$/i.test(file.name)) {
+          resolve({ canceled: false, error: "في وضع المتصفح يُدعم ملفات CSV فقط — استخدم النسخة المثبتة لملفات Excel", sheets: [] });
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          excelState = { rows: parseSimpleCsv(reader.result) };
+          resolve({ canceled: false, path: file.name, sheets: [{ name: "CSV", rows: excelState.rows.slice(0, 20) }] });
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }),
+    excelRead: () => delay(excelState ? excelState.rows.slice(0, 3000) : []),
     catalogBulkUpdate: (p) => {
       const items = filterItems({ kind: p.kind || "all", categoryId: p.categoryId || 0 });
       const factor = 1 + ((p.pct || 0) / 100);
@@ -256,6 +307,7 @@ window.FireAPI = (function () {
     },
     settingsGet: () => delay(ls.get(K_SET) || {}),
     settingsSave: (p) => { ls.set(K_SET, p || {}); return delay(p || {}); },
+
     openDataFolder: () => delay({ current: "وضع المتصفح" }),
     scanLegacy: () => delay({ current: "", found: [] }),
     importFromPath: () => delay({ error: "متاح فقط في وضع سطح المكتب", clients: 0, projects: 0 }),

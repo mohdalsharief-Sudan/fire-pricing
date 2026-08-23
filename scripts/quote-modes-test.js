@@ -22,7 +22,7 @@ const dbApi = {
   projects_delete: (p) => Promise.resolve({ ok: true, data: db.deleteProject(p.id) }),
   projects_importLegacy: (p) => Promise.resolve({ ok: true, data: db.importLegacy(p.projects || []) }),
   settings_get: () => Promise.resolve({ ok: true, data: db.getSettings() }),
-  settings_save: (p) => Promise.resolve({ ok: true, data: db.saveSettings(p) })
+  settings_save: (p) => Promise.resolve({ ok: true, data: db.saveSettings(p) }),
 };
 
 const html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");

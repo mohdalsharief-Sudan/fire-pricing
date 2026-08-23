@@ -7,6 +7,34 @@ const { ipcMain, dialog, BrowserWindow, app, shell } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const ExcelJS = require("exceljs");
+const { parseCsvText } = require("./csv.js");
+
+const MAX_IMPORT_ROWS = 3000;
+const PREVIEW_ROWS = 20;
+
+/* تطبيع قيم الخلايا إلى أنواع أساسية قابلة للاستنساخ عبر IPC
+   (exceljs يُرجع كائنات معقدة: تواريخ، روابط، richText، صيغ...) */
+function normalizeCell(v) {
+  if (v === null || v === undefined) return "";
+  if (typeof v === "number") {
+    return Number.isFinite(v) ? v : "";
+  }
+  if (typeof v === "boolean") return v ? "TRUE" : "FALSE";
+  if (typeof v === "string") return v;
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  if (typeof v === "object") {
+    if (v.text !== undefined && v.text !== null) return String(v.text);
+    if (Array.isArray(v.richText)) return v.richText.map(p => (p && p.text) || "").join("");
+    if (v.error !== undefined) return String(v.error);
+    if (v.hyperlink) return String(v.text != null ? v.text : v.hyperlink);
+    try { return JSON.stringify(v); } catch (e) { return String(v); }
+  }
+  return String(v);
+}
+
+function normalizeRow(row) {
+  return (row || []).map(normalizeCell);
+}
 
 function ok(data) { return { ok: true, data }; }
 function bad(err) { return { ok: false, error: String((err && err.message) || err) }; }
@@ -28,9 +56,63 @@ function registerIpc(db) {
   handle("catalog:categories", () => db.listCategories());
   handle("catalog:get", (p) => db.getItem(p.id));
   handle("catalog:add", (p) => db.addItem(p));
-  handle("catalog:update", (p) => db.updateItem(p.id, p));
+  handle("catalog:update", (p) => db.updateItem(p.id, p, p.source));
   handle("catalog:history", (p) => db.getPriceHistory(p.id));
   handle("catalog:bulkUpdate", (p) => db.bulkUpdatePrices(p || {}));
+
+  /* ---------- استيراد أسعار من Excel / CSV ---------- */
+  handle("catalog:excelOpen", async (p, event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const res = await dialog.showOpenDialog(win, {
+      title: "اختر ملف الأسعار (Excel أو CSV)",
+      filters: [{ name: "ملفات الأسعار", extensions: ["xlsx", "csv"] }],
+      properties: ["openFile"]
+    });
+    if (res.canceled || !res.filePaths.length) return { canceled: true };
+    const filePath = res.filePaths[0];
+    try {
+      if (path.extname(filePath).toLowerCase() === ".csv") {
+        const rows = parseCsvText(fs.readFileSync(filePath, "utf8"));
+        return { canceled: false, path: filePath, sheets: [{ name: "CSV", rows: rows.slice(0, PREVIEW_ROWS).map(normalizeRow) }] };
+      }
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.readFile(filePath);
+      const sheets = [];
+      wb.worksheets.forEach(ws => {
+        const rows = [];
+        ws.eachRow({ includeEmpty: false }, (row) => {
+          rows.push(normalizeRow(row.values.slice(1)));
+          if (rows.length >= PREVIEW_ROWS) return;
+        });
+        sheets.push({ name: ws.name, rows: rows.slice(0, PREVIEW_ROWS) });
+      });
+      return { canceled: false, path: filePath, sheets };
+    } catch (e) {
+      return { canceled: false, error: "تعذر قراءة الملف: " + e.message, sheets: [] };
+    }
+  });
+
+  handle("catalog:excelRead", async (p) => {
+    try {
+      const filePath = p.path;
+      if (!filePath || !fs.existsSync(filePath)) return { rows: [] };
+      if (path.extname(filePath).toLowerCase() === ".csv") {
+        return { rows: parseCsvText(fs.readFileSync(filePath, "utf8")).slice(0, MAX_IMPORT_ROWS).map(normalizeRow) };
+      }
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.readFile(filePath);
+      const ws = wb.worksheets[p.sheet || 0];
+      if (!ws) return { rows: [] };
+      const rows = [];
+      ws.eachRow({ includeEmpty: false }, (row) => {
+        rows.push(normalizeRow(row.values.slice(1)));
+        if (rows.length >= MAX_IMPORT_ROWS) return;
+      });
+      return { rows: rows.slice(0, MAX_IMPORT_ROWS) };
+    } catch (e) {
+      return { rows: [], error: e.message };
+    }
+  });
 
   /* ---------- العملاء ---------- */
   handle("clients:list", (p) => db.listClients((p && p.search) || ""));

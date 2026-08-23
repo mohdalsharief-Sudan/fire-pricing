@@ -8,11 +8,12 @@ const { contextBridge, ipcRenderer } = require("electron");
 const CHANNELS = [
   "catalog:list", "catalog:categories", "catalog:get", "catalog:add",
   "catalog:update", "catalog:history", "catalog:bulkUpdate",
+  "catalog:excelOpen", "catalog:excelRead",
   "clients:list", "clients:save", "clients:delete",
   "projects:save", "projects:list", "projects:get", "projects:delete",
   "projects:importLegacy", "db:exportJson", "project:exportExcel",
   "settings:get", "settings:save",
-  "db:openDataFolder", "db:scanLegacy", "db:importFromPath", "db:importJsonFile"
+  "db:openDataFolder", "db:scanLegacy", "db:importFromPath", "db:importJsonFile",
 ];
 
 const api = {};

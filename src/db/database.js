@@ -250,7 +250,7 @@ function makeApi(db) {
     return `${prefix}-${String(n + 1).padStart(3, "0")}`;
   }
 
-  function updateItem(id, data) {
+  function updateItem(id, data, source) {
     const old = getItem(id);
     if (!old) throw new Error("الصنف غير موجود");
     db.prepare(`
@@ -265,7 +265,7 @@ function makeApi(db) {
     );
     // تسجيل تغير السعر في السجل عند اختلافه عن السابق
     if (num(data.supply_cost) !== num(old.supply_cost) || num(data.install_cost) !== num(old.install_cost)) {
-      recordPrice(db, id, data.supply_cost || 0, data.install_cost || 0, "تعديل يدوي");
+      recordPrice(db, id, data.supply_cost || 0, data.install_cost || 0, source || "تعديل يدوي");
     }
     return getItem(id);
   }
