@@ -31,15 +31,16 @@ let CLIENTS = [];
 let autosaveTimer = null;
 let editingItemId = null;  /* للكتالوج */
 let editingClientId = null;
-
-/* ================= إعدادات الشركة ================= */
-
+/* ================= متغيرات ودوال الشركة ================= */
 const COMPANY_DEFAULTS = {
-  name: "شركة مقاولات الحماية من الحرائق",
+  name: "اسم شركتك",
   slogan: "توريد وتركيب وصيانة أنظمة الإطفاء والإنذار",
-  logo: "",               /* data URL للصورة */
-  phone: "", email: "", cr: "", address: "",
-  terms: "1) يشمل العرض التوريد والتركيب والتشغيل والتدريب وتسليم الشهادات المطلوبة.\n2) الضمان عامان من تاريخ التشغيل النهائي وفق معايير الدفاع المدني.\n3) يتم الحجز على الأجهزة عند التوقيع على الطلبية، ولا تتحمل الشركة أي تغيير في الأسعار بعد الحجز.\n4) أسعار هذا العرض سارية لمدة %DAYS% يوم من تاريخه."
+  phone: "",
+  email: "",
+  cr: "",
+  address: "",
+  terms: "1- صلاحية العرض %DAYS% يوماً من تاريخه.\n2- يلتزم الطرف الأول بتوريد مواد مطابقة لمواصفات الدفاع المدني.",
+  logo: ""
 };
 
 let COMPANY = Object.assign({}, COMPANY_DEFAULTS);
@@ -48,12 +49,105 @@ async function loadCompany() {
   try {
     const s = await API.settingsGet();
     COMPANY = Object.assign({}, COMPANY_DEFAULTS, s || {});
-  } catch (e) { /* القيم الافتراضية */ }
+  } catch (e) {
+    console.error("Failed to load company:", e);
+  }
 }
 
 async function saveCompany() {
-  try { await API.settingsSave(COMPANY); } catch (e) { toast("فشل حفظ الإعدادات: " + e.message); }
+  try {
+    await API.settingsSave(COMPANY);
+  } catch (e) {
+    console.error("Failed to save company:", e);
+  }
 }
+/* ================= إعدادات الشركة (النافذة) ================= */
+
+function openCompanyModal() {
+  const modal = document.getElementById("companyModal");
+  if (modal) modal.classList.add("show");
+
+  const name = document.getElementById("companyName");
+  const slogan = document.getElementById("companySlogan");
+  const phone = document.getElementById("companyPhone");
+  const email = document.getElementById("companyEmail");
+  const cr = document.getElementById("companyCr");
+  const address = document.getElementById("companyAddress");
+  const terms = document.getElementById("companyTerms");
+  const preview = document.getElementById("companyLogoPreview");
+
+  if (name) name.value = COMPANY.name || "";
+  if (slogan) slogan.value = COMPANY.slogan || "";
+  if (phone) phone.value = COMPANY.phone || "";
+  if (email) email.value = COMPANY.email || "";
+  if (cr) cr.value = COMPANY.cr || "";
+  if (address) address.value = COMPANY.address || "";
+  if (terms) terms.value = (COMPANY.terms || "").replace("%DAYS%", "30");
+
+  if (preview) {
+    if (COMPANY.logo) {
+      preview.src = COMPANY.logo;
+      preview.style.display = "block";
+    } else {
+      preview.style.display = "none";
+    }
+  }
+}
+
+on("btnCompanySettings", "click", openCompanyModal);
+
+on("companyClose", "click", () => {
+  const m = document.getElementById("companyModal");
+  if (m) m.classList.remove("show");
+});
+
+on("companyModal", "click", e => {
+  if (e.target.id === "companyModal") e.target.classList.remove("show");
+});
+
+on("companyLogoInput", "change", e => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/")) { toast("اختر ملف صورة"); return; }
+  if (file.size > 300 * 1024) { toast("حجم الصورة كبير — استخدم صورة أقل من 300 كيلوبايت"); return; }
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    COMPANY.logo = ev.target.result;
+    const preview = document.getElementById("companyLogoPreview");
+    if (preview) {
+      preview.src = COMPANY.logo;
+      preview.style.display = "block";
+    }
+  };
+  reader.readAsDataURL(file);
+});
+
+on("companyRemoveLogo", "click", () => {
+  COMPANY.logo = "";
+  const preview = document.getElementById("companyLogoPreview");
+  const input = document.getElementById("companyLogoInput");
+  if (preview) preview.style.display = "none";
+  if (input) input.value = "";
+});
+
+on("companySave", "click", async () => {
+  COMPANY.name = (document.getElementById("companyName")?.value || "").trim() || COMPANY_DEFAULTS.name;
+  COMPANY.slogan = (document.getElementById("companySlogan")?.value || "").trim();
+  COMPANY.phone = (document.getElementById("companyPhone")?.value || "").trim();
+  COMPANY.email = (document.getElementById("companyEmail")?.value || "").trim();
+  COMPANY.cr = (document.getElementById("companyCr")?.value || "").trim();
+  COMPANY.address = (document.getElementById("companyAddress")?.value || "").trim();
+  COMPANY.terms = (document.getElementById("companyTerms")?.value || "").trim() || COMPANY_DEFAULTS.terms;
+
+  await saveCompany();
+  toast("تم حفظ إعدادات الشركة");
+  
+  const m = document.getElementById("companyModal");
+  if (m) m.classList.remove("show");
+  
+  renderQuote();
+});
 
 /* ================= أدوات ================= */
 
@@ -88,6 +182,9 @@ function on(id, evt, fn) {
   if (el) el.addEventListener(evt, fn);
 }
 
+function onEl(el, evt, fn) {
+  if (el) el.addEventListener(evt, fn);
+}
 window.addEventListener("error", e => {
   try { toast("خطأ في التشغيل: " + (e.message || "غير معروف")); } catch (x) { /* ignore */ }
 });
@@ -529,14 +626,14 @@ on("btnAddFromLibrary", "click", () => {
   libModal.classList.add("show");
   renderLibrary();
 });
-on("libraryClose", "click", () => libModal.classList.remove("show"));
-libModal.addEventListener("click", e => { if (e.target === libModal) libModal.classList.remove("show"); });
-on("libCategory", "change", e => {
-  libSystem = e.target.value;
-  document.getElementById("libSearch").value = "";
-  renderLibrary();
-});
-on("libSearch", "input", renderLibrary);
+on("libModal", "click", e => { if (e.target.id === "libModal") e.target.classList.remove("show"); });
+on("matLibModal", "click", e => { if (e.target.id === "matLibModal") e.target.classList.remove("show"); });
+on("itemModal", "click", e => { if (e.target.id === "itemModal") e.target.classList.remove("show"); });
+on("historyModal", "click", e => { if (e.target.id === "historyModal") e.target.classList.remove("show"); });
+on("bulkModal", "click", e => { if (e.target.id === "bulkModal") e.target.classList.remove("show"); });
+on("clientModal", "click", e => { if (e.target.id === "clientModal") e.target.classList.remove("show"); });
+on("companyModal", "click", e => { if (e.target.id === "companyModal") e.target.classList.remove("show"); });
+on("projectsModal", "click", e => { if (e.target.id === "projectsModal") e.target.classList.remove("show"); });
 
 /* ================= مكتبة المواد ================= */
 
@@ -634,38 +731,53 @@ function fillClientSelect() {
 
 function bindProjectInputs() {
   const map = {
-    projectName: "name", projectClient: "client", projectLocation: "location",
-    projectDate: "date", projectVat: "vat", projectValidity: "validity",
-    projectArea: "area", projectFloors: "floors", projectNotes: "notes"
+    projectName: "name",
+    projectClient: "client",
+    projectLocation: "location",
+    projectDate: "date",
+    projectVat: "vat",
+    projectValidity: "validity",
+    projectArea: "area",
+    projectFloors: "floors",
+    projectNotes: "notes"
   };
+
   Object.keys(map).forEach(id => {
-    document.getElementById(id).addEventListener("input", () => {
-      state.project[map[id]] = document.getElementById(id).value;
+    const node = document.getElementById(id);
+    if (!node) {
+      console.error("[UI] Missing element:", id);
+      return;
+    }
+
+    node.addEventListener("input", () => {
+      state.project[map[id]] = node.value;
       updateCurrencyBadge();
       scheduleAutosave();
     });
   });
+
   on("projectCurrency", "change", e => {
     state.project.currency = e.target.value;
     updateCurrencyBadge();
     renderAll();
     scheduleAutosave();
   });
+
   on("projectClientSelect", "change", e => {
     meta.clientId = e.target.value ? parseInt(e.target.value) : null;
-    // انسخ اسم العميل المختار إلى حقل الاسم اليدوي للعرض
     const c = CLIENTS.find(x => x.id === meta.clientId);
     if (c) {
       state.project.client = c.name;
-      document.getElementById("projectClient").value = c.name;
+      const clientInput = document.getElementById("projectClient");
+      if (clientInput) clientInput.value = c.name;
     }
     scheduleAutosave();
   });
 
-  /* كتابة اسم العميل يدوياً: ربط تلقائي بسجل العملاء عند مغادرة الحقل */
   on("projectClient", "blur", () => {
     const name = state.project.client.trim();
     if (!name) return;
+
     const existing = CLIENTS.find(c => c.name.trim().toLowerCase() === name.toLowerCase());
     if (existing) {
       if (meta.clientId !== existing.id) {
@@ -673,22 +785,19 @@ function bindProjectInputs() {
         fillClientSelect();
         toast(`تم الربط بالعميل الموجود: ${existing.name}`);
       }
-    } else {
-      API.clientsSave({ name, city: state.project.location || "" }).then(c => {
-        CLIENTS.push(c);
-        meta.clientId = c.id;
-        fillClientSelect();
-        toast(`تمت إضافة العميل "${name}" إلى سجل العملاء تلقائياً`);
-        scheduleAutosave();
-      }).catch(() => { /* تجاهل */ });
     }
   });
+
   on("projectStatus", "change", e => {
-    meta.status = e.target.value;
+    meta.status = e.target.value || "draft";
     scheduleAutosave();
   });
-}
 
+  on("eqCategoryFilter", "change", e => {
+    currentFilter = e.target.value;
+    applyEqFilter();
+  });
+}
 function updateCurrencyBadge() {
   document.getElementById("currencyBadge").textContent =
     `العملة: ${CALC.CURRENCIES[state.project.currency].name}`;
@@ -812,19 +921,19 @@ function buildQuote(mode) {
   /* ====== ملخص الأسعار ====== */
   let summary = "";
   if (isClient) {
-    summary = `
+  summary = `
     <h3 style="color:#0f766e;font-size:14px;margin-top:14px">5) ملخص الأسعار</h3>
     <div class="q-sum">
       <div>الأجهزة والمعدات: <strong>${fmt(sale(c.eqSupply + c.eqInstall))} ${cur}</strong></div>
       ${state.materials.length ? `<div>المواد والمستهلكات: <strong>${fmt(sale(c.materialsCost))} ${cur}</strong></div>` : ""}
       ${state.labor.length ? `<div>تكاليف العمالة: <strong>${fmt(sale(c.laborCost))} ${cur}</strong></div>` : ""}
       ${state.services.length ? `<div>الخدمات الهندسية والتشغيلية: <strong>${fmt(sale(c.servicesAmount))} ${cur}</strong></div>` : ""}
-      ${state.margins.discountPct > 0 ? `<div>الخصم التجاري (${fmt(state.margins.discountPct)}%): -${fmt(c.discount)} ${cur}</div>` : ""}
       <div>الإجمالي قبل الضريبة: <strong>${fmt(c.afterDiscount)} ${cur}</strong></div>
       ${num(p.vat) > 0 ? `<div>ضريبة القيمة المضافة (${fmt(p.vat)}%): ${fmt(c.vat)} ${cur}</div>` : ""}
       <div class="grand">الإجمالي النهائي: ${fmt(c.grandTotal)} ${cur}</div>
+      ${state.margins.discountPct > 0 ? `<div style="grid-column:1/-1;color:#666;font-size:12px">* الأسعار أعلاه بعد تطبيق الخصم التجاري (${fmt(state.margins.discountPct)}%).</div>` : ""}
     </div>`;
-  } else {
+} else {
     summary = `
     <h3 style="color:#0f766e;font-size:14px;margin-top:14px">5) ملخص التكاليف والأسعار (داخلي)</h3>
     <div class="q-sum">
@@ -1032,86 +1141,100 @@ async function renderProjectsModal() {
 async function openProject(id) {
   try {
     if (!id) { alert("معرّف المشروع غير صالح"); return; }
+
     const p = await API.projectsGet(id);
     if (!p) { alert("المشروع غير موجود أو محذوف"); return; }
 
-    /* تشخيص: مشروع فارغ (ربما حُفظ من نسخة قديمة معطوبة) */
     const totalItems = (p.items || []).length;
     const hasName = (p.name || "").trim() !== "";
     if (!totalItems && !hasName) {
-      if (!confirm("هذا المشروع محفوظ بدون بيانات (اسم أو بنود).\n\nقد يكون حُفظ في نسخة قديمة لا تحفظ البيانات بشكل صحيح.\n\nهل تريد فتحه كما هو؟ (ينصح بالبحث عن قاعدة قديمة أو ملف احتياطي عبر أزرار الاسترداد)")) return;
+      if (!confirm("هذا المشروع محفوظ بدون بيانات (اسم أو بنود).\n\nقد يكون حُفظ في نسخة قديمة لا تحفظ البيانات بشكل صحيح.\n\nهل تريد فتحه كما هو؟")) return;
     }
-    const linkedClient = p.client || CLIENTS.find(x => x.id === p.client_id) || null;
+
+    const projectClientId = p.clientId ?? p.client_id ?? null;
+    const projectQuoteNo = p.quoteNo || p.quote_no || "";
+    const linkedClient =
+      p.client ||
+      CLIENTS.find(x => x.id === projectClientId) ||
+      null;
+
     state.project = {
-      name: p.name || "", client: linkedClient ? linkedClient.name : "", location: p.location || "", date: p.date || today(),
-      currency: p.currency || "SAR", vat: num(p.vat) || 15, validity: num(p.validity) || 30,
-      area: p.area || "", floors: p.floors || "", notes: p.notes || ""
+      name: p.name || "",
+      client: linkedClient ? linkedClient.name : (p.clientName || p.client_name || ""),
+      location: p.location || "",
+      date: p.date || today(),
+      currency: p.currency || "SAR",
+      vat: num(p.vat) || 15,
+      validity: num(p.validity) || 30,
+      area: p.area || "",
+      floors: p.floors || "",
+      notes: p.notes || ""
     };
-    state.margins = Object.assign({ overheadPct: 8, contingencyPct: 5, profitPct: 15, discountPct: 0 }, p.margins || {});
-    meta = { id: p.id, quoteNo: p.quote_no || "", status: p.status || "draft", clientId: p.client_id || null };
-    state.equipment = (p.items || []).filter(i => i.kind === "equipment").map(i => ({
-      id: uid(), name: i.name, qty: i.qty, supplyCost: i.supply_cost, installCost: i.install_cost,
-      system: i.system || "alarm", itemId: i.item_id
-    }));
-    state.materials = (p.items || []).filter(i => i.kind === "material").map(i => ({
-      id: uid(), name: i.name, qty: i.qty, unit: i.unit, unitCost: i.unit_cost, itemId: i.item_id
-    }));
-    state.labor = (p.items || []).filter(i => i.kind === "labor").map(i => ({
-      id: uid(), name: i.name, workers: i.workers, days: i.days, dailyCost: i.daily_cost
-    }));
-    state.services = (p.items || []).filter(i => i.kind === "service").map(i => ({
-      id: uid(), name: i.name, value: i.service_value, type: i.service_type
-    }));
-    document.getElementById("projectsModal").classList.remove("show");
+
+    state.margins = Object.assign(
+      { overheadPct: 8, contingencyPct: 5, profitPct: 15, discountPct: 0 },
+      p.margins || {}
+    );
+
+    meta = {
+      id: p.id,
+      quoteNo: projectQuoteNo,
+      status: p.status || "draft",
+      clientId: projectClientId
+    };
+
+    state.equipment = (p.items || [])
+      .filter(i => i.kind === "equipment")
+      .map(i => ({
+        id: uid(),
+        name: i.name,
+        qty: i.qty,
+        supplyCost: i.supply_cost,
+        installCost: i.install_cost,
+        system: i.system || "alarm",
+        itemId: i.item_id ?? i.itemId ?? null
+      }));
+
+    state.materials = (p.items || [])
+      .filter(i => i.kind === "material")
+      .map(i => ({
+        id: uid(),
+        name: i.name,
+        qty: i.qty,
+        unit: i.unit,
+        unitCost: i.unit_cost,
+        itemId: i.item_id ?? i.itemId ?? null
+      }));
+
+    state.labor = (p.items || [])
+      .filter(i => i.kind === "labor")
+      .map(i => ({
+        id: uid(),
+        name: i.name,
+        workers: i.workers,
+        days: i.days,
+        dailyCost: i.daily_cost
+      }));
+
+    state.services = (p.items || [])
+      .filter(i => i.kind === "service")
+      .map(i => ({
+        id: uid(),
+        name: i.name,
+        value: i.service_value,
+        type: i.service_type
+      }));
+
+    document.getElementById("projectsModal")?.classList.remove("show");
     fillClientSelect();
-    quoteMode = "client";   /* دائماً نبدأ بعرض العميل عند فتح مشروع */
+    quoteMode = "client";
     renderAll();
     setTab("project");
-    toast(`تم فتح المشروع ${meta.quoteNo}`);
+    toast(`تم فتح المشروع ${meta.quoteNo || ""}`.trim());
   } catch (e) {
     toast("فشل الفتح: " + e.message);
   }
 }
-
-on("btnSaveProject", "click", () => doSave(true));
-
-on("btnLoadProject", "click", () => {
-  document.getElementById("projectsModal").classList.add("show");
-  renderProjectsModal();
-});
-on("projectsClose", "click", () => document.getElementById("projectsModal").classList.remove("show"));
-on("projectsModal", "click", e => {
-  if (e.target.id === "projectsModal") e.target.classList.remove("show");
-});
-on("projectsSearch", "input", renderProjectsModal);
-
-on("btnImportLegacy", "click", async () => {
-  const legacy = [];
-  try {
-    Object.keys(localStorage).forEach(k => {
-      if (k.startsWith("firepricing_projects_v1") || k.startsWith("fp_projects_v2")) {
-        const raw = localStorage.getItem(k);
-        if (k.startsWith("fp_projects_v2")) {
-          try {
-            const arr = JSON.parse(raw);
-            if (Array.isArray(arr)) legacy.push(...arr);
-          } catch (e) { /* ignore */ }
-        } else {
-          try { legacy.push(JSON.parse(raw)); } catch (e) { /* ignore */ }
-        }
-      }
-    });
-  } catch (e) { /* ignore */ }
-  if (!legacy.length) { toast("لا توجد مشاريع قديمة للاستيراد"); return; }
-  try {
-    const n = await API.projectsImportLegacy(legacy);
-    toast(`تم استيراد ${n} مشروع من النسخة السابقة`);
-    renderProjectsModal();
-  } catch (e) {
-    toast("فشل الاستيراد: " + e.message);
-  }
-});
-
 /* ===== استرداد البيانات: قواعد قديمة / ملف احتياطي / مجلد البيانات ===== */
 
 on("btnOpenDataFolder", "click", async () => {
@@ -1807,59 +1930,79 @@ clientModal.addEventListener("click", e => { if (e.target === clientModal) clien
 const companyModal = document.getElementById("companyModal");
 
 function openCompanyModal() {
-  document.getElementById("cmName").value = COMPANY.name;
-  document.getElementById("cmSlogan").value = COMPANY.slogan || "";
-  document.getElementById("cmPhone").value = COMPANY.phone || "";
-  document.getElementById("cmEmail").value = COMPANY.email || "";
-  document.getElementById("cmCr").value = COMPANY.cr || "";
-  document.getElementById("cmAddress").value = COMPANY.address || "";
-  document.getElementById("cmTerms").value = (COMPANY.terms || "").replace("%DAYS%", "30");
-  const preview = document.getElementById("cmLogoPreview");
-  if (COMPANY.logo) {
-    preview.src = COMPANY.logo;
-    preview.style.display = "block";
-  } else {
-    preview.style.display = "none";
+  const name = document.getElementById("companyName");
+  const slogan = document.getElementById("companySlogan");
+  const phone = document.getElementById("companyPhone");
+  const email = document.getElementById("companyEmail");
+  const cr = document.getElementById("companyCr");
+  const address = document.getElementById("companyAddress");
+  const terms = document.getElementById("companyTerms");
+  const preview = document.getElementById("companyLogoPreview");
+
+  if (name) name.value = COMPANY.name || "";
+  if (slogan) slogan.value = COMPANY.slogan || "";
+  if (phone) phone.value = COMPANY.phone || "";
+  if (email) email.value = COMPANY.email || "";
+  if (cr) cr.value = COMPANY.cr || "";
+  if (address) address.value = COMPANY.address || "";
+  if (terms) terms.value = (COMPANY.terms || "").replace("%DAYS%", "30");
+
+  if (preview) {
+    if (COMPANY.logo) {
+      preview.src = COMPANY.logo;
+      preview.style.display = "block";
+    } else {
+      preview.style.display = "none";
+    }
   }
-  companyModal.classList.add("show");
+
+  if (companyModal) companyModal.classList.add("show");
 }
 
 on("btnCompanySettings", "click", openCompanyModal);
-on("companyClose", "click", () => companyModal.classList.remove("show"));
-companyModal.addEventListener("click", e => { if (e.target === companyModal) companyModal.classList.remove("show"); });
+on("companyClose", "click", () => companyModal && companyModal.classList.remove("show"));
+onEl(companyModal, "click", e => {
+  if (e.target === companyModal) companyModal.classList.remove("show");
+});
 
-on("cmLogoInput", "change", e => {
+on("companyLogoInput", "change", e => {
   const file = e.target.files && e.target.files[0];
   if (!file) return;
   if (!file.type.startsWith("image/")) { toast("اختر ملف صورة"); return; }
   if (file.size > 300 * 1024) { toast("حجم الصورة كبير — استخدم صورة أقل من 300 كيلوبايت"); return; }
+
   const reader = new FileReader();
   reader.onload = ev => {
     COMPANY.logo = ev.target.result;
-    const preview = document.getElementById("cmLogoPreview");
-    preview.src = COMPANY.logo;
-    preview.style.display = "block";
+    const preview = document.getElementById("companyLogoPreview");
+    if (preview) {
+      preview.src = COMPANY.logo;
+      preview.style.display = "block";
+    }
   };
   reader.readAsDataURL(file);
 });
 
-on("cmRemoveLogo", "click", () => {
+on("companyRemoveLogo", "click", () => {
   COMPANY.logo = "";
-  document.getElementById("cmLogoPreview").style.display = "none";
-  document.getElementById("cmLogoInput").value = "";
+  const preview = document.getElementById("companyLogoPreview");
+  const input = document.getElementById("companyLogoInput");
+  if (preview) preview.style.display = "none";
+  if (input) input.value = "";
 });
 
 on("companySave", "click", async () => {
-  COMPANY.name = document.getElementById("cmName").value.trim() || COMPANY_DEFAULTS.name;
-  COMPANY.slogan = document.getElementById("cmSlogan").value.trim();
-  COMPANY.phone = document.getElementById("cmPhone").value.trim();
-  COMPANY.email = document.getElementById("cmEmail").value.trim();
-  COMPANY.cr = document.getElementById("cmCr").value.trim();
-  COMPANY.address = document.getElementById("cmAddress").value.trim();
-  COMPANY.terms = document.getElementById("cmTerms").value.trim() || COMPANY_DEFAULTS.terms;
+  COMPANY.name = (document.getElementById("companyName")?.value || "").trim() || COMPANY_DEFAULTS.name;
+  COMPANY.slogan = (document.getElementById("companySlogan")?.value || "").trim();
+  COMPANY.phone = (document.getElementById("companyPhone")?.value || "").trim();
+  COMPANY.email = (document.getElementById("companyEmail")?.value || "").trim();
+  COMPANY.cr = (document.getElementById("companyCr")?.value || "").trim();
+  COMPANY.address = (document.getElementById("companyAddress")?.value || "").trim();
+  COMPANY.terms = (document.getElementById("companyTerms")?.value || "").trim() || COMPANY_DEFAULTS.terms;
+
   await saveCompany();
   toast("تم حفظ إعدادات الشركة");
-  companyModal.classList.remove("show");
+  if (companyModal) companyModal.classList.remove("show");
   renderQuote();
 });
 
@@ -1898,4 +2041,33 @@ async function initApp() {
 /* واجهة تصحيح (للمطورين والاختبارات) */
 window.__fp = { state: () => state, meta: () => meta, CATALOG: () => CATALOG, CLIENTS: () => CLIENTS, COMPANY: () => COMPANY, loadCompany, openCompanyModal, quoteMode: () => quoteMode };
 
-initApp();
+/* ================= زر استدعاء المشاريع ================= */
+on("btnLoadProject", "click", () => {
+  const m = document.getElementById("projectsModal");
+  if (m) m.classList.add("show");
+  
+  // استدعاء الدالة الصحيحة لجلب بيانات المشاريع
+  if (typeof renderProjectsModal === "function") {
+    renderProjectsModal();
+  }
+});
+
+on("projectsClose", "click", () => {
+  const m = document.getElementById("projectsModal");
+  if (m) m.classList.remove("show");
+});
+
+async function bootApp() {
+  try {
+    await initApp();
+  } catch (e) {
+    console.error("[INIT ERROR]", e);
+    toast("فشل تهيئة الواجهة: " + (e.message || e));
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", bootApp, { once: true });
+} else {
+  bootApp();
+}

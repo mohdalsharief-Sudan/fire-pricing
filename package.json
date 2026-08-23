@@ -9,14 +9,18 @@
   },
   "license": "UNLICENSED",
   "scripts": {
-    "start": "electron .",
-    "test": "node --test src/",
-    "seed": "node scripts/generate-seeds.js",
-    "rebuild": "electron-rebuild -f -w better-sqlite3",
-    "dist": "electron-builder",
-    "license:keys": "node tools/generate-keys.js",
-    "license:gen": "node tools/generate-license.js"
-  },
+  "electron:ensure": "node node_modules/electron/install.js",
+  "start": "npm run electron:ensure && npm run rebuild:electron && electron .",
+  "test": "npm run rebuild:node && node --test src/csv.test.js src/core/calc.test.js src/db/database.test.js src/license/license-core.test.js",
+  "test:quick": "node --test src/csv.test.js src/core/calc.test.js src/license/license-core.test.js",
+  "seed": "node scripts/generate-seeds.js",
+  "rebuild": "npm run rebuild:electron",
+  "rebuild:node": "npm rebuild better-sqlite3",
+  "rebuild:electron": "electron-rebuild -f -w better-sqlite3",
+  "dist": "electron-builder",
+  "license:keys": "node tools/generate-keys.js",
+  "license:gen": "node tools/generate-license.js"
+},
   "dependencies": {
     "better-sqlite3": "^12.11.1",
     "exceljs": "^4.4.0",

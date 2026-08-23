@@ -131,7 +131,21 @@ window.FireAPI = (function () {
   }
 
   const delay = (v) => Promise.resolve(v);
+  function nextLocalQuoteNo(list) {
+  const y = new Date().getFullYear();
+  const prefix = `Q-${y}-`;
+  let max = 0;
 
+  (list || []).forEach(p => {
+    const qn = String((p && p.quoteNo) || "");
+    if (!qn.startsWith(prefix)) return;
+
+    const n = parseInt(qn.slice(prefix.length), 10);
+    if (Number.isFinite(n) && n > max) max = n;
+  });
+
+  return `${prefix}${String(max + 1).padStart(4, "0")}`;
+}
   return {
     mode: "local",
     catalogList: (p) => delay(filterItems(p)),
@@ -239,14 +253,12 @@ window.FireAPI = (function () {
         const idx = list.findIndex(x => x.id === p.id);
         if (idx >= 0) list[idx] = Object.assign({}, list[idx], p, { updated_at: new Date().toISOString() });
       } else {
-        const year = new Date().getFullYear();
-        const seq = list.filter(x => (x.quoteNo || "").startsWith(`Q-${year}-`)).length + 1;
-        p.id = list.length ? Math.max(...list.map(x => x.id)) + 1 : 1;
-        p.quoteNo = `Q-${year}-${String(seq).padStart(4, "0")}`;
-        p.created_at = new Date().toISOString();
-        p.updated_at = p.created_at;
-        list.push(p);
-      }
+  p.id = list.length ? Math.max(...list.map(x => x.id)) + 1 : 1;
+  p.quoteNo = p.quoteNo || nextLocalQuoteNo(list);
+  p.created_at = new Date().toISOString();
+  p.updated_at = p.created_at;
+  list.push(p);
+}
       ls.set(K_PROJ, list);
       return delay({ id: p.id, quoteNo: p.quoteNo });
     },
@@ -294,7 +306,7 @@ window.FireAPI = (function () {
         const seq = list.filter(x => (x.quoteNo || "").startsWith(`Q-${year}-`)).length + 1;
         list.push({
           id: list.length ? Math.max(...list.map(x => x.id)) + 1 : 1,
-          quoteNo: `Q-${year}-${String(seq).padStart(4, "0")}`,
+          quoteNo: nextLocalQuoteNo(list),
           name: p.name || "مشروع مستورد", location: p.location || "", date: p.date || "",
           area: p.area || 0, floors: p.floors || 0, currency: p.currency || "SAR",
           vat: p.vat || 15, validity: p.validity || 30, margins: lp.margins || {},
@@ -306,8 +318,12 @@ window.FireAPI = (function () {
       return delay(projects.length);
     },
     settingsGet: () => delay(ls.get(K_SET) || {}),
-    settingsSave: (p) => { ls.set(K_SET, p || {}); return delay(p || {}); },
-
+    settingsSave: (p) => {
+     const current = ls.get(K_SET) || {};
+     const merged = Object.assign({}, current, p || {});
+     ls.set(K_SET, merged);
+     return delay(merged);
+   },
     openDataFolder: () => delay({ current: "وضع المتصفح" }),
     scanLegacy: () => delay({ current: "", found: [] }),
     importFromPath: () => delay({ error: "متاح فقط في وضع سطح المكتب", clients: 0, projects: 0 }),
@@ -317,7 +333,7 @@ window.FireAPI = (function () {
       input.accept = ".json,application/json";
       return new Promise(resolve => {
         input.onchange = () => {
-          const file = input.files && input.files[0];
+          const qn = p.quoteNo || p.quote_no || nextLocalQuoteNo(list);
           if (!file) { resolve({ canceled: true }); return; }
           const reader = new FileReader();
           reader.onload = async () => {

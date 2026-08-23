@@ -70,6 +70,22 @@ function createWindow() {
 
 function buildMenu(win) {
   const isMac = process.platform === "darwin";
+  const isDev = !app.isPackaged || process.env.NODE_ENV === "development";
+
+  const viewSubmenu = [
+    { label: "تكبير", role: "zoomIn" },
+    { label: "تصغير", role: "zoomOut" },
+    { type: "separator" },
+    { label: "ملء الشاشة", role: "togglefullscreen" }
+  ];
+
+  if (isDev) {
+    viewSubmenu.push(
+      { type: "separator" },
+      { label: "أدوات المطور", role: "toggleDevTools" }
+    );
+  }
+
   const template = [
     ...(isMac ? [{ role: "appMenu" }] : []),
     {
@@ -86,16 +102,10 @@ function buildMenu(win) {
     },
     {
       label: "عرض",
-      submenu: [
-        { label: "تكبير", role: "zoomIn" },
-        { label: "تصغير", role: "zoomOut" },
-        { type: "separator" },
-        { label: "ملء الشاشة", role: "togglefullscreen" },
-        { type: "separator" },
-        { label: "أدوات المطور", role: "toggleDevTools" }
-      ]
+      submenu: viewSubmenu
     }
   ];
+
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 

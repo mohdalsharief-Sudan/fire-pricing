@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نظام التسعير الذكي لأنظمة الإطفاء والإنذار</title>
 <link rel="stylesheet" href="css/style.css">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';">
 </head>
 <body>
 
@@ -692,46 +693,55 @@
     </div>
     <div class="modal-body">
       <p class="hint">تظهر هذه البيانات في رأس عرض السعر وفي الشروط العامة — ويمكنك تغييرها في أي وقت.</p>
+
       <div class="grid-2">
         <div class="field">
           <label>اسم الشركة *</label>
-          <input type="text" id="cmName" placeholder="اسم شركتك">
+          <input type="text" id="companyName" placeholder="اسم شركتك">
         </div>
+
         <div class="field">
           <label>الشعار النصي (Slogan)</label>
-          <input type="text" id="cmSlogan" placeholder="توريد وتركيب وصيانة أنظمة الإطفاء والإنذار">
+          <input type="text" id="companySlogan" placeholder="توريد وتركيب وصيانة أنظمة الإطفاء والإنذار">
         </div>
+
         <div class="field">
           <label>الجوال</label>
-          <input type="text" id="cmPhone" placeholder="05xxxxxxxx">
+          <input type="text" id="companyPhone" placeholder="05xxxxxxxx">
         </div>
+
         <div class="field">
           <label>البريد الإلكتروني</label>
-          <input type="text" id="cmEmail" placeholder="info@company.com">
+          <input type="text" id="companyEmail" placeholder="info@company.com">
         </div>
+
         <div class="field">
           <label>السجل التجاري</label>
-          <input type="text" id="cmCr">
+          <input type="text" id="companyCr">
         </div>
+
         <div class="field">
           <label>العنوان</label>
-          <input type="text" id="cmAddress" placeholder="المدينة - الحي - الشارع">
+          <input type="text" id="companyAddress" placeholder="المدينة - الحي - الشارع">
         </div>
       </div>
+
       <div class="field">
         <label>شعار الشركة (صورة)</label>
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-          <img id="cmLogoPreview" alt="الشعار" style="display:none;max-height:56px;max-width:160px;border:1px solid var(--border);border-radius:8px;padding:4px;background:#fff">
-          <input type="file" id="cmLogoInput" accept="image/*" style="color:var(--muted)">
-          <button class="btn btn-secondary btn-sm" id="cmRemoveLogo" type="button">إزالة الشعار</button>
+          <img id="companyLogoPreview" alt="الشعار" style="display:none;max-height:56px;max-width:160px;border:1px solid var(--border);border-radius:8px;padding:4px;background:#fff">
+          <input type="file" id="companyLogoInput" accept="image/*" style="color:var(--muted)">
+          <button class="btn btn-secondary btn-sm" id="companyRemoveLogo" type="button">إزالة الشعار</button>
         </div>
         <span class="opt">يفضل صورة PNG بخلفية شفافة وبحجم أقل من 300 كيلوبايت</span>
       </div>
+
       <div class="field">
         <label>الشروط العامة في عرض السعر</label>
-        <textarea id="cmTerms" rows="6" placeholder="شروط العرض..."></textarea>
+        <textarea id="companyTerms" rows="6" placeholder="شروط العرض..."></textarea>
         <span class="opt">اكتب كل شرط في سطر منفصل. رمز %DAYS% يُستبدل تلقائياً بعدد أيام الصلاحية.</span>
       </div>
+
       <div class="modal-actions">
         <button class="btn btn-primary" id="companySave">حفظ الإعدادات</button>
       </div>

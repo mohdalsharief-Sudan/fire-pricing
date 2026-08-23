@@ -336,10 +336,24 @@ function makeApi(db) {
   /* ---------- المشاريع ---------- */
 
   function nextQuoteNo(db) {
-    const y = new Date().getFullYear();
-    const row = db.prepare("SELECT COUNT(*) AS c FROM projects WHERE quote_no LIKE ?").get(`Q-${y}-%`);
-    return `Q-${y}-${String(row.c + 1).padStart(4, "0")}`;
-  }
+  const y = new Date().getFullYear();
+  const prefix = `Q-${y}-`;
+
+  const row = db.prepare(`
+    SELECT quote_no
+    FROM projects
+    WHERE quote_no LIKE ?
+    ORDER BY CAST(SUBSTR(quote_no, ?) AS INTEGER) DESC
+    LIMIT 1
+  `).get(`${prefix}%`, prefix.length + 1);
+
+  const lastSeq = row && row.quote_no
+    ? parseInt(String(row.quote_no).slice(prefix.length), 10)
+    : 0;
+
+  const nextSeq = Number.isFinite(lastSeq) ? lastSeq + 1 : 1;
+  return `${prefix}${String(nextSeq).padStart(4, "0")}`;
+}
 
   function saveProject(p) {
     const itemSql = db.prepare(`
@@ -594,11 +608,16 @@ function makeApi(db) {
   }
 
   function saveSettings(data) {
-    db.prepare(`
-      INSERT INTO settings (id, data) VALUES (1, ?)
-      ON CONFLICT(id) DO UPDATE SET data=excluded.data`).run(JSON.stringify(data || {}));
-    return getSettings();
-  }
+  const current = getSettings();
+  const merged = Object.assign({}, current, data || {});
+
+  db.prepare(`
+    INSERT INTO settings (id, data) VALUES (1, ?)
+    ON CONFLICT(id) DO UPDATE SET data=excluded.data
+  `).run(JSON.stringify(merged));
+
+  return merged;
+}
 
   /* ---------- النسخ الاحتياطي والتصدير ---------- */
 
