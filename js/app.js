@@ -31,68 +31,6 @@ let CLIENTS = [];
 let autosaveTimer = null;
 let editingItemId = null;  /* للكتالوج */
 let editingClientId = null;
-/* ================= متغيرات ودوال الشركة ================= */
-const COMPANY_DEFAULTS = {
-  name: "اسم شركتك",
-  slogan: "توريد وتركيب وصيانة أنظمة الإطفاء والإنذار",
-  phone: "",
-  email: "",
-  cr: "",
-  address: "",
-  terms: "1- صلاحية العرض %DAYS% يوماً من تاريخه.\n2- يلتزم الطرف الأول بتوريد مواد مطابقة لمواصفات الدفاع المدني.",
-  logo: ""
-};
-
-let COMPANY = Object.assign({}, COMPANY_DEFAULTS);
-
-async function loadCompany() {
-  try {
-    const s = await API.settingsGet();
-    COMPANY = Object.assign({}, COMPANY_DEFAULTS, s || {});
-  } catch (e) {
-    console.error("Failed to load company:", e);
-  }
-}
-
-async function saveCompany() {
-  try {
-    await API.settingsSave(COMPANY);
-  } catch (e) {
-    console.error("Failed to save company:", e);
-  }
-}
-/* ================= إعدادات الشركة (النافذة) ================= */
-
-function openCompanyModal() {
-  const modal = document.getElementById("companyModal");
-  if (modal) modal.classList.add("show");
-
-  const name = document.getElementById("companyName");
-  const slogan = document.getElementById("companySlogan");
-  const phone = document.getElementById("companyPhone");
-  const email = document.getElementById("companyEmail");
-  const cr = document.getElementById("companyCr");
-  const address = document.getElementById("companyAddress");
-  const terms = document.getElementById("companyTerms");
-  const preview = document.getElementById("companyLogoPreview");
-
-  if (name) name.value = COMPANY.name || "";
-  if (slogan) slogan.value = COMPANY.slogan || "";
-  if (phone) phone.value = COMPANY.phone || "";
-  if (email) email.value = COMPANY.email || "";
-  if (cr) cr.value = COMPANY.cr || "";
-  if (address) address.value = COMPANY.address || "";
-  if (terms) terms.value = (COMPANY.terms || "").replace("%DAYS%", "30");
-
-  if (preview) {
-    if (COMPANY.logo) {
-      preview.src = COMPANY.logo;
-      preview.style.display = "block";
-    } else {
-      preview.style.display = "none";
-    }
-  }
-}
 
 on("btnCompanySettings", "click", openCompanyModal);
 
@@ -149,32 +87,6 @@ on("companySave", "click", async () => {
   renderQuote();
 });
 
-/* ================= أدوات ================= */
-
-function today() {
-  const d = new Date();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${m}-${day}`;
-}
-
-function uid() { return idCounter++; }
-
-function num(v) { return CALC.num(v); }
-function fmt(n) { return CALC.fmt(n); }
-function money(n) { return CALC.money(n, state.project.currency); }
-
-function esc(s) {
-  return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-}
-
-function toast(msg) {
-  const t = document.getElementById("toast");
-  if (!t) return;
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2600);
-}
 
 /* ربط دفاعي: لا يتعطل البرنامج إذا غاب عنصر من واجهة أقدم */
 function on(id, evt, fn) {
@@ -1096,145 +1008,6 @@ function renderAnalysis() {
     <ul class="advice-list" style="margin-top:14px">${advice.map(a => `<li class="${a.cls}">${a.text}</li>`).join("")}</ul>`;
 }
 
-/* ================= حفظ / استرجاع المشاريع ================= */
-
-async function renderProjectsModal() {
-  const list = document.getElementById("projectsList");
-  list.innerHTML = `<p class="hint">جارٍ التحميل...</p>`;
-  const search = document.getElementById("projectsSearch").value.trim();
-  try {
-    const projects = await API.projectsList(search);
-    if (!projects.length) {
-      list.innerHTML = `<p class="hint">لا توجد مشاريع محفوظة.</p>`;
-      return;
-    }
-    list.innerHTML = "";
-    projects.forEach(pr => {
-      const div = document.createElement("div");
-      div.className = "proj-item";
-      const total = pr.total ? CALC.money(pr.total, state.project.currency) : "";
-      div.innerHTML = `
-        <div>
-          <div class="proj-name">${esc(pr.quote_no || "")} — ${esc(pr.name || "مشروع بدون اسم")}</div>
-          <div class="proj-meta">${esc(pr.client_name || "—")} | ${esc(pr.date || "")} | <span class="status-badge s-${pr.status}">${STATUS_LABELS[pr.status] || pr.status}</span> ${total ? "| " + total : ""}</div>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-primary btn-sm" data-open="${pr.id}">فتح</button>
-          <button class="btn btn-danger-ghost btn-sm" data-delproj="${pr.id}">حذف</button>
-        </div>`;
-      list.appendChild(div);
-    });
-    list.querySelectorAll("[data-open]").forEach(b => b.addEventListener("click", async () => {
-      await openProject(parseInt(b.dataset.open));
-    }));
-    list.querySelectorAll("[data-delproj]").forEach(b => b.addEventListener("click", async () => {
-      if (!confirm("حذف هذا المشروع نهائياً؟")) return;
-      await API.projectsDelete(parseInt(b.dataset.delproj));
-      toast("تم حذف المشروع");
-      renderProjectsModal();
-    }));
-  } catch (e) {
-    list.innerHTML = `<p class="hint">تعذر التحميل: ${esc(e.message)}</p>`;
-  }
-}
-
-async function openProject(id) {
-  try {
-    if (!id) { alert("معرّف المشروع غير صالح"); return; }
-
-    const p = await API.projectsGet(id);
-    if (!p) { alert("المشروع غير موجود أو محذوف"); return; }
-
-    const totalItems = (p.items || []).length;
-    const hasName = (p.name || "").trim() !== "";
-    if (!totalItems && !hasName) {
-      if (!confirm("هذا المشروع محفوظ بدون بيانات (اسم أو بنود).\n\nقد يكون حُفظ في نسخة قديمة لا تحفظ البيانات بشكل صحيح.\n\nهل تريد فتحه كما هو؟")) return;
-    }
-
-    const projectClientId = p.clientId ?? p.client_id ?? null;
-    const projectQuoteNo = p.quoteNo || p.quote_no || "";
-    const linkedClient =
-      p.client ||
-      CLIENTS.find(x => x.id === projectClientId) ||
-      null;
-
-    state.project = {
-      name: p.name || "",
-      client: linkedClient ? linkedClient.name : (p.clientName || p.client_name || ""),
-      location: p.location || "",
-      date: p.date || today(),
-      currency: p.currency || "SAR",
-      vat: num(p.vat) || 15,
-      validity: num(p.validity) || 30,
-      area: p.area || "",
-      floors: p.floors || "",
-      notes: p.notes || ""
-    };
-
-    state.margins = Object.assign(
-      { overheadPct: 8, contingencyPct: 5, profitPct: 15, discountPct: 0 },
-      p.margins || {}
-    );
-
-    meta = {
-      id: p.id,
-      quoteNo: projectQuoteNo,
-      status: p.status || "draft",
-      clientId: projectClientId
-    };
-
-    state.equipment = (p.items || [])
-      .filter(i => i.kind === "equipment")
-      .map(i => ({
-        id: uid(),
-        name: i.name,
-        qty: i.qty,
-        supplyCost: i.supply_cost,
-        installCost: i.install_cost,
-        system: i.system || "alarm",
-        itemId: i.item_id ?? i.itemId ?? null
-      }));
-
-    state.materials = (p.items || [])
-      .filter(i => i.kind === "material")
-      .map(i => ({
-        id: uid(),
-        name: i.name,
-        qty: i.qty,
-        unit: i.unit,
-        unitCost: i.unit_cost,
-        itemId: i.item_id ?? i.itemId ?? null
-      }));
-
-    state.labor = (p.items || [])
-      .filter(i => i.kind === "labor")
-      .map(i => ({
-        id: uid(),
-        name: i.name,
-        workers: i.workers,
-        days: i.days,
-        dailyCost: i.daily_cost
-      }));
-
-    state.services = (p.items || [])
-      .filter(i => i.kind === "service")
-      .map(i => ({
-        id: uid(),
-        name: i.name,
-        value: i.service_value,
-        type: i.service_type
-      }));
-
-    document.getElementById("projectsModal")?.classList.remove("show");
-    fillClientSelect();
-    quoteMode = "client";
-    renderAll();
-    setTab("project");
-    toast(`تم فتح المشروع ${meta.quoteNo || ""}`.trim());
-  } catch (e) {
-    toast("فشل الفتح: " + e.message);
-  }
-}
 /* ===== استرداد البيانات: قواعد قديمة / ملف احتياطي / مجلد البيانات ===== */
 
 on("btnOpenDataFolder", "click", async () => {
@@ -1832,99 +1605,6 @@ on("btnImportRun", "click", async () => {
 on("importClose", "click", () => document.getElementById("importModal").classList.remove("show"));
 on("importModal", "click", e => { if (e.target && e.target.id === "importModal") e.target.classList.remove("show"); });
 
-/* ================= العملاء ================= */
-
-async function refreshClients() {
-  try { CLIENTS = await API.clientsList(""); } catch (e) { CLIENTS = []; }
-  fillClientSelect();
-}
-
-async function renderClients() {
-  const body = document.getElementById("clientBody");
-  const search = document.getElementById("clientSearch").value.trim();
-  body.innerHTML = `<tr><td colspan="6" class="hint">جارٍ التحميل...</td></tr>`;
-  try {
-    const list = await API.clientsList(search);
-    body.innerHTML = "";
-    list.forEach((c, i) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${i + 1}</td>
-        <td>${esc(c.name)}</td>
-        <td>${esc(c.phone || "—")}</td>
-        <td>${esc(c.city || "—")}</td>
-        <td>${esc(c.cr_number || "—")}</td>
-        <td>
-          <button class="btn btn-secondary btn-sm" data-editcl="${c.id}">تعديل</button>
-          <button class="btn btn-danger-ghost btn-sm" data-delcl="${c.id}">حذف</button>
-        </td>`;
-      body.appendChild(tr);
-    });
-    if (!list.length) body.innerHTML = `<tr><td colspan="6" class="hint">لا يوجد عملاء</td></tr>`;
-    document.getElementById("clientCount").textContent = `إجمالي العملاء: ${list.length}`;
-  } catch (e) {
-    body.innerHTML = `<tr><td colspan="6" class="hint">تعذر التحميل: ${esc(e.message)}</td></tr>`;
-  }
-}
-
-on("clientSearch", "input", () => {
-  clearTimeout(window.__clSearchT);
-  window.__clSearchT = setTimeout(renderClients, 300);
-});
-
-const clientModal = document.getElementById("clientModal");
-
-function openClientEditor(id) {
-  editingClientId = id || null;
-  document.getElementById("clientModalTitle").textContent = id ? "تعديل عميل" : "إضافة عميل جديد";
-  const c = id ? CLIENTS.find(x => x.id === id) : {};
-  document.getElementById("cmName").value = (c && c.name) || "";
-  document.getElementById("cmPhone").value = (c && c.phone) || "";
-  document.getElementById("cmEmail").value = (c && c.email) || "";
-  document.getElementById("cmCr").value = (c && c.cr_number) || "";
-  document.getElementById("cmCity").value = (c && c.city) || "";
-  document.getElementById("cmNotes").value = (c && c.notes) || "";
-  clientModal.classList.add("show");
-}
-
-on("btnAddClient", "click", () => openClientEditor(null));
-
-on("clientBody", "click", e => {
-  const edit = e.target.closest("[data-editcl]");
-  if (edit) { openClientEditor(parseInt(edit.dataset.editcl)); return; }
-  const del = e.target.closest("[data-delcl]");
-  if (del) {
-    const id = parseInt(del.dataset.delcl);
-    if (!confirm("حذف هذا العميل؟")) return;
-    API.clientsDelete(id).then(() => { refreshClients(); renderClients(); toast("تم حذف العميل"); });
-  }
-});
-
-on("cmSave", "click", async () => {
-  const name = document.getElementById("cmName").value.trim();
-  if (!name) { toast("أدخل اسم العميل"); return; }
-  const payload = {
-    id: editingClientId, name,
-    phone: document.getElementById("cmPhone").value.trim(),
-    email: document.getElementById("cmEmail").value.trim(),
-    cr_number: document.getElementById("cmCr").value.trim(),
-    city: document.getElementById("cmCity").value.trim(),
-    notes: document.getElementById("cmNotes").value.trim()
-  };
-  try {
-    await API.clientsSave(payload);
-    toast(editingClientId ? "تم تحديث العميل" : "تمت إضافة العميل");
-    clientModal.classList.remove("show");
-    await refreshClients();
-    renderClients();
-  } catch (e) {
-    toast("فشل الحفظ: " + e.message);
-  }
-});
-
-on("clientClose", "click", () => clientModal.classList.remove("show"));
-clientModal.addEventListener("click", e => { if (e.target === clientModal) clientModal.classList.remove("show"); });
-
 /* ================= إعدادات الشركة (النافذة) ================= */
 
 const companyModal = document.getElementById("companyModal");
@@ -2023,21 +1703,27 @@ function renderAll() {
 document.querySelectorAll(".nav-item").forEach(a => a.addEventListener("click", () => setTab(a.dataset.tab)));
 
 async function initApp() {
-  /* شارة وضع قاعدة البيانات */
-  const badge = document.getElementById("dbBadge");
-  badge.textContent = API.mode === "sqlite" ? "قاعدة البيانات: SQLite" : "وضع المتصفح (احتياطي)";
-  badge.classList.toggle("warn", API.mode !== "sqlite");
+  // 1. تحميل إعدادات الشركة من الملف الجديد
+  if (typeof loadCompany === "function") {
+    await loadCompany();
+  }
 
-  await loadCompany();
-  try { CLIENTS = await API.clientsList(""); } catch (e) { CLIENTS = []; }
+  // 2. تحميل العملاء
+  try { 
+    CLIENTS = await API.clientsList(""); 
+  } catch (e) { 
+    CLIENTS = []; 
+  }
+
+  // 3. تحديث الكتالوج
   await refreshCatalog();
 
+  // 4. ربط الأحداث وتحديث الواجهة
   bindProjectInputs();
   bindMarginInputs();
   fillCatCategorySelect("all");
   renderAll();
 }
-
 /* واجهة تصحيح (للمطورين والاختبارات) */
 window.__fp = { state: () => state, meta: () => meta, CATALOG: () => CATALOG, CLIENTS: () => CLIENTS, COMPANY: () => COMPANY, loadCompany, openCompanyModal, quoteMode: () => quoteMode };
 
