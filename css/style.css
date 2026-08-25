@@ -337,3 +337,11 @@ tr.row-danger td { background: rgba(248,113,113,.07); }
 .s-good { background: rgba(74,222,128,.15); color: var(--success); }
 .s-new { background: rgba(56,189,248,.15); color: var(--accent2); }
 .s-skip { background: rgba(148,163,184,.15); color: #cbd5e1; }
+
+/* ===== زر تحويل العرض المعتمد ===== */
+.btn-success {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: #fff; border: none; padding: 8px 16px; border-radius: 10px;
+  font-weight: 700; font-size: 13px; cursor: pointer; transition: all .2s;
+}
+.btn-success:hover { filter: brightness(1.1); transform: translateY(-1px); }

@@ -91,3 +91,23 @@ on("cmSave", "click", async () => {
 on("clientClose", "click", () => clientModal.classList.remove("show"));
 clientModal.addEventListener("click", e => { if (e.target === clientModal) clientModal.classList.remove("show"); });
 
+
+/* ===== جسر الربط مع Fire-Engineer-AI: تصدير/استيراد العملاء ===== */
+on("btnExportClients", "click", async () => {
+  try {
+    const res = await API.clientsExportBridge();
+    if (res && !res.canceled) toast("تم تصدير العملاء — استوردها في Fire-Engineer-AI");
+    else if (res && res.canceled) toast("أُلغيت عملية التصدير");
+  } catch (e) { toast("فشل التصدير: " + e.message); }
+});
+
+on("btnImportClients", "click", async () => {
+  try {
+    const res = await API.clientsImportBridge();
+    if (!res) return;
+    if (res.canceled) return;
+    toast(`تم استيراد ${res.imported} عميل (تخطي ${res.skipped} مكرر/فارغ)`);
+    await refreshClients();
+    renderClients();
+  } catch (e) { toast("فشل الاستيراد: " + e.message); }
+});

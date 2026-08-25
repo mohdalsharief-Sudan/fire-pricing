@@ -118,6 +118,56 @@ function registerIpc(db) {
   handle("clients:list", (p) => db.listClients((p && p.search) || ""));
   handle("clients:save", (p) => db.saveClient(p));
   handle("clients:delete", (p) => db.deleteClient(p.id));
+  handle("quote:exportApproved", (p, event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const res = dialog.showSaveDialogSync(win, {
+      title: "تصدير العرض المعتمد (للاستيراد في Fire-Engineer-AI)",
+      defaultPath: (p && p.project && p.project.name ? p.project.name.replace(/[\\/:*?"<>|]/g, "-") : "quote") + "-approved.json",
+      filters: [{ name: "JSON", extensions: ["json"] }]
+    });
+    if (!res) return { canceled: true };
+    fs.writeFileSync(res, JSON.stringify(p, null, 2), "utf8");
+    return { canceled: false, filePath: res };
+  });
+  handle("clients:exportBridge", (p, event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const res = dialog.showSaveDialogSync(win, {
+      title: "تصدير العملاء (للاستيراد في Fire-Engineer-AI)",
+      defaultPath: "clients-export.json",
+      filters: [{ name: "JSON", extensions: ["json"] }]
+    });
+    if (!res) return { canceled: true };
+    fs.writeFileSync(res, JSON.stringify(db.exportClients(), null, 2), "utf8");
+    return { canceled: false, filePath: res };
+  });
+  handle("clients:importBridge", async (p, event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const res = await dialog.showOpenDialog(win, {
+      title: "اختر ملف العملاء (من Fire-Engineer-AI أو التسعير)",
+      filters: [{ name: "JSON", extensions: ["json"] }],
+      properties: ["openFile"]
+    });
+    if (res.canceled || !res.filePaths.length) return { canceled: true };
+    const data = JSON.parse(fs.readFileSync(res.filePaths[0], "utf8"));
+    const clients = data.clients || (Array.isArray(data) ? data : []);
+    let imported = 0, skipped = 0;
+    const all = db.listClients("");
+    const exists = (n) => all.some(c => c.name.trim().toLowerCase() === String(n || "").trim().toLowerCase());
+    clients.forEach(c => {
+      if (!c || !c.name) { skipped++; return; }
+      if (exists(c.name)) { skipped++; return; }
+      db.saveClient({
+        name: c.name,
+        phone: c.phone || "",
+        email: c.email || "",
+        cr_number: c.cr_number || "",
+        city: c.city || (typeof c.address === "string" && c.address.split("|")[0] ? c.address.split("|")[0].trim() : ""),
+        notes: [c.notes || "", c.contact_person ? "جهة اتصال: " + c.contact_person : ""].filter(Boolean).join("\n")
+      });
+      imported++;
+    });
+    return { canceled: false, imported, skipped };
+  });
 
   /* ---------- المشاريع ---------- */
   handle("projects:save", (p) => db.saveProject(p));
