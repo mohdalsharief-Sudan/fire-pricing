@@ -10,7 +10,10 @@ const CHANNELS = [
   "catalog:update", "catalog:history", "catalog:bulkUpdate",
   "catalog:excelOpen", "catalog:excelRead",
   "clients:list", "clients:save", "clients:delete", "clients:exportBridge", "clients:importBridge", "quote:exportApproved",
+<<<<<<< HEAD
   "projects:importCAD",
+=======
+>>>>>>> 966ed1998195a94673a5a7506c4a4ebdda329385
   "projects:save", "projects:list", "projects:get", "projects:delete",
   "projects:importLegacy", "db:exportJson", "project:exportExcel",
   "settings:get", "settings:save",
