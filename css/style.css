@@ -345,7 +345,6 @@ tr.row-danger td { background: rgba(248,113,113,.07); }
   font-weight: 700; font-size: 13px; cursor: pointer; transition: all .2s;
 }
 .btn-success:hover { filter: brightness(1.1); transform: translateY(-1px); }
-
 /* زر استيراد من Fire-CAD-Analyzer */
 .btn-cad-import {
     background: linear-gradient(135deg, #1B4F72, #2874A6);
@@ -372,3 +371,4 @@ tr.row-danger td { background: rgba(248,113,113,.07); }
     transform: translateY(0);
     box-shadow: none;
 }
+

@@ -11,6 +11,8 @@ const CHANNELS = [
   "catalog:excelOpen", "catalog:excelRead",
   "clients:list", "clients:save", "clients:delete", "clients:exportBridge", "clients:importBridge", "quote:exportApproved",
   "projects:importCAD",
+
+>>>>>>> 0f146b9085eae53d1033c684951e5d04d124fbd3
   "projects:save", "projects:list", "projects:get", "projects:delete",
   "projects:importLegacy", "db:exportJson", "project:exportExcel",
   "settings:get", "settings:save",
