@@ -54,6 +54,9 @@
     <button class="btn btn-ghost btn-block" id="btnBackup">نسخة احتياطية (JSON)</button>
     <button class="btn btn-ghost btn-block" id="btnCompanySettings">إعدادات الشركة</button>
     <button class="btn btn-danger-ghost btn-block" id="btnNewProject">مشروع جديد</button>
+    <button onclick="importFromCAD()" class="btn btn-cad-import btn-block" id="btnImportCAD">
+    📥 استيراد من Fire-CAD-Analyzer
+</button>
   </div>
 </aside>
 
@@ -305,6 +308,7 @@
         <button class="btn btn-primary" id="btnPrint">طباعة / حفظ PDF</button>
         <button class="btn btn-secondary" id="btnExportExcel">تصدير Excel</button>
         <button class="btn btn-secondary" id="btnCopySummary">نسخ الملخص</button>
+        <button class="btn btn-success" id="btnExportApproved">📤 تحويل العرض المعتمد إلى عقد</button>
       </div>
       <p class="hint" id="quoteModeHint"></p>
       <div id="quotePreview"></div>
@@ -366,6 +370,8 @@
       <div class="toolbar">
         <input type="text" id="clientSearch" placeholder="بحث بالاسم / الجوال / المدينة...">
         <button class="btn btn-primary" id="btnAddClient">+ إضافة عميل</button>
+        <button class="btn btn-secondary" id="btnExportClients">📤 تصدير العملاء (لبرنامج الإدارة)</button>
+        <button class="btn btn-secondary" id="btnImportClients">📥 استيراد عملاء (من برنامج الإدارة)</button>
       </div>
       <div class="table-wrap">
         <table class="table" id="clientTable">
@@ -757,9 +763,31 @@
 <script src="js/license-public-key.js"></script>
 <script src="js/api.js"></script>
 <script src="js/utils.js"></script>
+<script src="js/ui/catalog.js"></script>
 <script src="js/ui/company.js"></script>
 <script src="js/ui/clients.js"></script>
 <script src="js/ui/projects.js"></script>  
 <script src="js/app.js"></script>
+<script>
+    async function importFromCAD() {
+    try {
+        const response = await window.fireApi.projects_importCAD();
+        
+        // النتيجة داخل response.data
+        const result = response.data || response;
+        
+        if (result.canceled) return;
+        
+        if (result.imported) {
+            alert('✅ تم الاستيراد بنجاح!\nالمشروع: ' + result.project.name);
+            location.reload();
+        } else {
+            alert('❌ ' + (result.error || 'فشل الاستيراد'));
+        }
+    } catch (err) {
+        alert('❌ خطأ: ' + err.message);
+    }
+}
+</script>
 </body>
 </html>

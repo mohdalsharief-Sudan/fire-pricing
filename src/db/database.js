@@ -333,6 +333,26 @@ function makeApi(db) {
     return true;
   }
 
+  /* ---------- تصدير العملاء بصيغة موحدة (لربط Fire-Engineer-AI) ---------- */
+  function exportClients() {
+    const clients = db.prepare("SELECT * FROM clients ORDER BY name").all();
+    return {
+      format: "fire-safety-clients-v1",
+      exported_at: new Date().toISOString(),
+      source: "fire-pricing",
+      clients: clients.map(c => ({
+        name: c.name || "",
+        contact_person: "",
+        phone: c.phone || "",
+        email: c.email || "",
+        address: [c.city, c.notes && c.notes.includes("س.ت") ? c.notes : ""].filter(Boolean).join(" | "),
+        notes: [c.cr_number ? "س.ت: " + c.cr_number : "", c.notes || ""].filter(Boolean).join("\n"),
+        cr_number: c.cr_number || "",
+        city: c.city || ""
+      }))
+    };
+  }
+
   /* ---------- المشاريع ---------- */
 
   function nextQuoteNo(db) {
@@ -648,7 +668,7 @@ function makeApi(db) {
   return {
     listCatalog, listCategories, getItem, addItem, updateItem,
     getPriceHistory, bulkUpdatePrices,
-    listClients, saveClient, deleteClient,
+    listClients, saveClient, deleteClient, exportClients,
     saveProject, listProjects, getProject, deleteProject, importLegacy,
     importFromLegacyDb, importFromJson,
     getSettings, saveSettings,

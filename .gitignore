@@ -189,3 +189,4 @@ fire-pricing-backup-*.json
 # ===== مفاتيح الترخيص (سرية — لا تُرفع أبداً) =====
 license-keys/
 *.pem
+*.bat
